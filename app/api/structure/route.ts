@@ -46,7 +46,7 @@ ${rawQuestion}
 Réponse brute :
 ${rawAnswer}`
 
-    const modelsToTry = ['gemini-3.8-flash', 'gemini-3.5-flash-lite']
+    const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.8-flash']
     let lastError: unknown = null
     let outputText: string | null | undefined = null
 
