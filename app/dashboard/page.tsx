@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Header from '@/components/Header'
 import { createClient } from '@/lib/supabase/server'
 import SignOutButton from './signout-button'
 
@@ -42,134 +43,133 @@ async function DashboardContent() {
   const totalUseful = userFiches.reduce((acc, f) => acc + (f.useful_count || 0), 0)
 
   return (
-    <div className="space-y-8">
-      {/* En-tête */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#E5E5E5]">
-        <div>
-          <div className="mb-2">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Header user={user} />
+
+      <main className="flex-1 max-w-4xl w-full mx-auto p-6 sm:p-10 space-y-8">
+        {/* En-tête de bienvenue & profil */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Tableau de bord</h1>
+            <p className="text-sm text-muted mt-1">
+              Connecté en tant que <span className="text-foreground font-medium">{user.email}</span>
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
             <Link
-              href="/"
-              className="text-xs text-gray-500 hover:text-black transition-colors"
+              href="/create"
+              className="bg-foreground text-white hover:bg-black/85 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
             >
-              ← Retour à l'accueil
+              Créer une nouvelle fiche
             </Link>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A]">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Connecté en tant que <span className="text-[#1A1A1A] font-medium">{user.email}</span>
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/create"
-            className="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors"
-          >
-            Créer une nouvelle fiche
-          </Link>
-          <SignOutButton />
-        </div>
-      </div>
-
-      {/* Section Votre impact */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-[#1A1A1A]">Votre impact</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-[#E5E5E5] rounded p-5 space-y-1">
-            <span className="text-xs text-gray-500 font-medium">Fiches publiées</span>
-            <p className="text-3xl font-bold tracking-tight text-[#1A1A1A]">{totalFiches}</p>
-          </div>
-          <div className="bg-white border border-[#E5E5E5] rounded p-5 space-y-1">
-            <span className="text-xs text-gray-500 font-medium">Vues cumulées</span>
-            <p className="text-3xl font-bold tracking-tight text-[#1A1A1A]">{totalViews}</p>
-          </div>
-          <div className="bg-white border border-[#E5E5E5] rounded p-5 space-y-1">
-            <span className="text-xs text-gray-500 font-medium">Votes « Utile »</span>
-            <p className="text-3xl font-bold tracking-tight text-[#1A1A1A]">{totalUseful}</p>
+            <SignOutButton />
           </div>
         </div>
-      </div>
 
-      {/* Liste des fiches */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-[#1A1A1A]">Mes fiches</h2>
-
-        {userFiches.length === 0 ? (
-          <div className="bg-white border border-[#E5E5E5] rounded p-8 text-center">
-            <p className="text-gray-500 text-sm">Tu n'as pas encore créé de fiche.</p>
+        {/* Section Votre impact */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">Votre impact</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white border border-border rounded-md p-5 space-y-1 shadow-sm">
+              <span className="text-xs text-muted font-medium uppercase tracking-wider">Fiches publiées</span>
+              <p className="text-3xl font-bold tracking-tight text-foreground">{totalFiches}</p>
+            </div>
+            <div className="bg-white border border-border rounded-md p-5 space-y-1 shadow-sm">
+              <span className="text-xs text-muted font-medium uppercase tracking-wider">Vues cumulées</span>
+              <p className="text-3xl font-bold tracking-tight text-foreground">{totalViews}</p>
+            </div>
+            <div className="bg-white border border-border rounded-md p-5 space-y-1 shadow-sm">
+              <span className="text-xs text-muted font-medium uppercase tracking-wider">Votes « Utile »</span>
+              <p className="text-3xl font-bold tracking-tight text-foreground">{totalUseful}</p>
+            </div>
           </div>
-        ) : (
-          <div className="grid gap-4">
-            {userFiches.map((fiche) => {
-              const dateFormatted = new Date(fiche.created_at).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })
+        </div>
 
-              return (
-                <div
-                  key={fiche.id}
-                  className="bg-white border border-[#E5E5E5] rounded p-5 space-y-3"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <Link
-                      href={`/fiche/${fiche.id}`}
-                      className="font-medium text-[#1A1A1A] text-base leading-snug hover:underline"
-                    >
-                      {fiche.title}
-                    </Link>
-                    <div className="text-xs text-gray-400 whitespace-nowrap">
-                      {dateFormatted}
-                    </div>
-                  </div>
+        {/* Liste des fiches */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">Mes fiches</h2>
+            <span className="text-xs text-muted">
+              {userFiches.length} fiche{userFiches.length > 1 ? 's' : ''}
+            </span>
+          </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#F5F5F5] text-xs">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {fiche.tags && fiche.tags.map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {fiche.stack && fiche.stack.map((item, idx) => (
-                        <span
-                          key={`stack-${idx}`}
-                          className="border border-[#E5E5E5] text-gray-500 px-2 py-0.5 rounded text-xs"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
+          {userFiches.length === 0 ? (
+            <div className="bg-white border border-border rounded-md p-10 text-center shadow-sm">
+              <p className="text-muted text-sm">Tu n'as pas encore créé de fiche.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3.5">
+              {userFiches.map((fiche) => {
+                const dateFormatted = new Date(fiche.created_at).toLocaleDateString('fr-FR', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })
 
-                    <div className="flex items-center gap-2">
-                      <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded font-mono text-[11px]">
-                        👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
-                      </span>
-                      <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded font-mono text-[11px]">
-                        👍 {fiche.useful_count || 0} utile
+                return (
+                  <div
+                    key={fiche.id}
+                    className="bg-white border border-border hover:border-gray-300 rounded-md p-5 space-y-3 transition-all shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <Link
+                        href={`/fiche/${fiche.id}`}
+                        className="text-lg font-semibold text-foreground hover:underline leading-snug"
+                      >
+                        {fiche.title}
+                      </Link>
+                      <span className="text-sm text-muted whitespace-nowrap">
+                        {dateFormatted}
                       </span>
                     </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/50">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {fiche.tags &&
+                          fiche.tags.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-accent-light text-accent text-xs px-2 py-1 rounded-full font-medium"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        {fiche.stack &&
+                          fiche.stack.map((item, idx) => (
+                            <span
+                              key={`stack-${idx}`}
+                              className="bg-accent-light text-accent text-xs px-2 py-1 rounded-full font-medium"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium">
+                          👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
+                        </span>
+                        <span className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium">
+                          👍 {fiche.useful_count || 0} utile
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   )
 }
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] p-6 sm:p-12">
-      <div className="max-w-3xl mx-auto">
-        <Suspense fallback={<p className="text-sm text-gray-500">Chargement...</p>}>
-          <DashboardContent />
-        </Suspense>
-      </div>
-    </div>
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center text-sm text-muted">Chargement...</div>}>
+      <DashboardContent />
+    </Suspense>
   )
 }

@@ -118,28 +118,37 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between pb-4 border-b border-[#E5E5E5]">
-        <h1 className="text-xl font-bold tracking-tight text-[#1A1A1A]">
-          Créer une nouvelle fiche
-        </h1>
+      {/* En-tête de section */}
+      <div className="flex items-center justify-between pb-4 border-b border-border">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Créer une nouvelle fiche
+          </h1>
+          <p className="text-sm text-muted mt-1">
+            Transformez un échange WhatsApp ou forum en documentation durable.
+          </p>
+        </div>
         <Link
           href="/dashboard"
-          className="text-sm text-gray-500 hover:text-black transition-colors"
+          className="text-sm font-medium text-muted hover:text-foreground transition-colors"
         >
-          Retour au dashboard
+          ← Retour au dashboard
         </Link>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded">
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md shadow-sm">
           {error}
         </div>
       )}
 
       {/* Formulaire de saisie brute */}
-      <form onSubmit={handleGenerate} className="bg-white p-6 border border-[#E5E5E5] rounded space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+      <form
+        onSubmit={handleGenerate}
+        className="bg-white p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
+      >
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-foreground">
             Question brute
           </label>
           <textarea
@@ -147,13 +156,13 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             onChange={(e) => setRawQuestion(e.target.value)}
             rows={4}
             placeholder="Collez ici la question technique posée sur WhatsApp ou Facebook..."
-            className="w-full border border-[#E5E5E5] p-3 rounded text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-black"
+            className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             required
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-foreground">
             Réponse brute
           </label>
           <textarea
@@ -161,18 +170,23 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             onChange={(e) => setRawAnswer(e.target.value)}
             rows={5}
             placeholder="Collez ici la réponse apportée dans la discussion..."
-            className="w-full border border-[#E5E5E5] p-3 rounded text-sm text-[#1A1A1A] bg-white focus:outline-none focus:border-black"
+            className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             required
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white px-5 py-2.5 rounded text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
-        >
-          {loading ? 'Génération par Gemini en cours...' : 'Générer la fiche'}
-        </button>
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-accent text-white px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-all shadow-sm inline-flex items-center gap-2"
+          >
+            {loading && (
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            )}
+            <span>{loading ? 'Génération par Gemini en cours...' : 'Générer la fiche'}</span>
+          </button>
+        </div>
       </form>
 
       {/* Formulaire d'édition pré-rempli par Gemini */}
@@ -180,53 +194,58 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
         <form
           onSubmit={handlePublish}
           id="generated-fiche-form"
-          className="bg-white p-6 border border-[#E5E5E5] rounded space-y-5"
+          className="bg-white p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
         >
-          <h2 className="text-lg font-semibold text-[#1A1A1A] pb-2 border-b border-[#E5E5E5]">
-            Fiche structurée proposée par l'IA
-          </h2>
+          <div className="pb-3 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground">
+              Fiche structurée proposée par l'IA
+            </h2>
+            <p className="text-xs text-muted mt-0.5">
+              Vous pouvez réviser et enrichir les champs avant publication.
+            </p>
+          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Titre
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-[#E5E5E5] p-2.5 rounded text-sm text-[#1A1A1A] focus:outline-none focus:border-black"
+              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Problème
             </label>
             <textarea
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
               rows={4}
-              className="w-full border border-[#E5E5E5] p-2.5 rounded text-sm text-[#1A1A1A] focus:outline-none focus:border-black"
+              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Solution
             </label>
             <textarea
               value={solution}
               onChange={(e) => setSolution(e.target.value)}
               rows={6}
-              className="w-full border border-[#E5E5E5] p-2.5 rounded text-sm text-[#1A1A1A] focus:outline-none focus:border-black"
+              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Tags (séparés par des virgules)
             </label>
             <input
@@ -234,12 +253,12 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
               value={tagsStr}
               onChange={(e) => setTagsStr(e.target.value)}
               placeholder="react, css, git"
-              className="w-full border border-[#E5E5E5] p-2.5 rounded text-sm text-[#1A1A1A] focus:outline-none focus:border-black"
+              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Technologies / Stack (séparées par des virgules)
             </label>
             <input
@@ -247,7 +266,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
               value={stackStr}
               onChange={(e) => setStackStr(e.target.value)}
               placeholder="Next.js, Tailwind, Python"
-              className="w-full border border-[#E5E5E5] p-2.5 rounded text-sm text-[#1A1A1A] focus:outline-none focus:border-black"
+              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             />
           </div>
 
@@ -255,9 +274,12 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             <button
               type="submit"
               disabled={publishing}
-              className="bg-black text-white px-5 py-2.5 rounded text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              className="bg-foreground text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-black/85 disabled:opacity-50 transition-all shadow-sm inline-flex items-center gap-2"
             >
-              {publishing ? 'Publication en cours...' : 'Publier la fiche'}
+              {publishing && (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              )}
+              <span>{publishing ? 'Publication en cours...' : 'Publier la fiche'}</span>
             </button>
           </div>
         </form>

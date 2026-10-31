@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Header from '@/components/Header'
 import { getFingerprint } from '@/lib/fingerprint'
 
 interface FicheViewerProps {
@@ -19,9 +20,10 @@ interface FicheViewerProps {
     author_id: string
     author_name?: string
   }
+  user?: { email?: string | null } | null
 }
 
-export default function FicheViewer({ fiche }: FicheViewerProps) {
+export default function FicheViewer({ fiche, user }: FicheViewerProps) {
   const [usefulCount, setUsefulCount] = useState(fiche.useful_count || 0)
   const [hasVoted, setHasVoted] = useState(false)
   const [voting, setVoting] = useState(false)
@@ -75,17 +77,19 @@ export default function FicheViewer({ fiche }: FicheViewerProps) {
   })
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] p-6 sm:p-12">
-      <div className="max-w-2xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Header user={user} />
+
+      <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-10 space-y-8">
         {/* Navigation retour */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#E5E5E5]">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
           <Link
             href="/"
-            className="text-sm text-gray-500 hover:text-black transition-colors"
+            className="text-sm font-medium text-muted hover:text-foreground transition-colors inline-flex items-center gap-1.5"
           >
             ← Retour à l'accueil
           </Link>
-          <div className="flex items-center gap-3 text-xs text-gray-400 font-mono">
+          <div className="flex items-center gap-2 text-sm text-muted">
             <span>Auteur : {fiche.author_name || 'Senior'}</span>
             <span>•</span>
             <span>{dateFormatted}</span>
@@ -94,7 +98,7 @@ export default function FicheViewer({ fiche }: FicheViewerProps) {
 
         {/* Titre et badges */}
         <div className="space-y-4">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1A1A1A] leading-tight">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground leading-tight">
             {fiche.title}
           </h1>
 
@@ -103,7 +107,7 @@ export default function FicheViewer({ fiche }: FicheViewerProps) {
               fiche.tags.map((tag, idx) => (
                 <span
                   key={idx}
-                  className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded text-xs font-medium"
+                  className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium"
                 >
                   {tag}
                 </span>
@@ -112,7 +116,7 @@ export default function FicheViewer({ fiche }: FicheViewerProps) {
               fiche.stack.map((item, idx) => (
                 <span
                   key={`stack-${idx}`}
-                  className="border border-[#E5E5E5] bg-white text-gray-500 px-2.5 py-1 rounded text-xs font-medium"
+                  className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium"
                 >
                   {item}
                 </span>
@@ -121,38 +125,47 @@ export default function FicheViewer({ fiche }: FicheViewerProps) {
         </div>
 
         {/* Bloc Problème */}
-        <section className="bg-white border border-[#E5E5E5] rounded p-6 space-y-2">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+        <section className="bg-white border border-border rounded-md p-6 space-y-2 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
             Problème
           </h2>
-          <p className="text-sm sm:text-base text-[#1A1A1A] leading-relaxed whitespace-pre-wrap">
+          <p className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-wrap">
             {fiche.problem}
           </p>
         </section>
 
         {/* Bloc Solution */}
-        <section className="bg-white border border-[#E5E5E5] rounded p-6 space-y-2">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+        <section className="bg-white border border-border rounded-md p-6 space-y-2 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
             Solution
           </h2>
-          <div className="text-sm sm:text-base text-[#1A1A1A] leading-relaxed whitespace-pre-wrap">
+          <div className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-wrap">
             {fiche.solution}
           </div>
         </section>
 
-        {/* Bloc dépliable Question d'origine */}
+        {/* Bloc dépliable Question d'origine (accordéon propre avec chevron) */}
         {fiche.original_question && (
-          <div className="border border-[#E5E5E5] bg-white rounded p-4">
+          <div className="border border-border bg-gray-50/70 rounded-md p-4 transition-all">
             <button
               type="button"
               onClick={() => setShowOriginal(!showOriginal)}
-              className="w-full flex items-center justify-between text-left text-xs font-medium text-gray-500 hover:text-black transition-colors"
+              className="w-full flex items-center justify-between text-left text-xs font-medium text-muted hover:text-foreground transition-colors"
             >
               <span>Voir la question d'origine</span>
-              <span>{showOriginal ? '▲ Masquer' : '▼ Déplier'}</span>
+              <svg
+                className={`w-4 h-4 text-muted transition-transform duration-200 ${
+                  showOriginal ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
             {showOriginal && (
-              <div className="mt-3 pt-3 border-t border-[#F5F5F5] text-xs text-gray-600 italic whitespace-pre-wrap">
+              <div className="mt-3 pt-3 border-t border-border/60 text-xs text-foreground/80 italic whitespace-pre-wrap leading-relaxed">
                 {fiche.original_question}
               </div>
             )}
@@ -160,26 +173,36 @@ export default function FicheViewer({ fiche }: FicheViewerProps) {
         )}
 
         {/* Bouton Utile & Métriques */}
-        <div className="flex items-center justify-between pt-4 border-t border-[#E5E5E5]">
+        <div className="flex items-center justify-between pt-6 border-t border-border">
           <button
             type="button"
             id="useful-vote-button"
             onClick={handleVote}
             disabled={hasVoted || voting}
-            className={`px-5 py-2.5 rounded text-sm font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all shadow-sm ${
               hasVoted
-                ? 'bg-gray-100 text-gray-500 cursor-not-allowed border border-[#E5E5E5]'
-                : 'bg-black text-white hover:bg-gray-800'
+                ? 'bg-gray-100 text-muted cursor-not-allowed border border-border'
+                : 'bg-foreground text-white hover:bg-black/85 active:scale-[0.98]'
             }`}
           >
-            {hasVoted ? '✓ Déjà voté' : '👍 Utile'} ({usefulCount})
+            {hasVoted ? (
+              <>
+                <span>✓</span>
+                <span>Déjà voté ({usefulCount})</span>
+              </>
+            ) : (
+              <>
+                <span>👍</span>
+                <span>Utile ({usefulCount})</span>
+              </>
+            )}
           </button>
 
-          <div className="text-xs text-gray-400 font-mono">
-            {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
+          <div className="text-sm text-muted">
+            👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

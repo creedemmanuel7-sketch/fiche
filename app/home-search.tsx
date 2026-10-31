@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import Header from '@/components/Header'
 import { createClient } from '@/lib/supabase/client'
 
 export interface PublicFiche {
@@ -20,7 +21,7 @@ export interface PublicFiche {
 
 interface HomeSearchProps {
   initialFiches: PublicFiche[]
-  user: { email?: string } | null
+  user: { email?: string | null } | null
 }
 
 export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
@@ -65,75 +66,53 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] p-6 sm:p-12">
-      <div className="max-w-3xl mx-auto space-y-10">
-        {/* Barre supérieure avec navigation */}
-        <header className="flex items-center justify-between pb-6 border-b border-[#E5E5E5]">
-          <Link href="/" className="text-xl font-bold tracking-tight text-[#1A1A1A]">
-            Fiche
-          </Link>
-          <nav>
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="border border-[#E5E5E5] bg-white text-[#1A1A1A] hover:bg-gray-50 px-4 py-2 rounded text-sm font-medium transition-colors"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="bg-black text-white hover:bg-gray-800 px-4 py-2 rounded text-sm font-medium transition-colors"
-              >
-                Se connecter
-              </Link>
-            )}
-          </nav>
-        </header>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Header user={user} />
 
-        {/* En-tête héro */}
-        <div className="text-center space-y-3 pt-4">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1A1A1A]">
+      <main className="flex-1 max-w-4xl w-full mx-auto p-6 sm:p-10 space-y-10">
+        {/* En-tête héro sobre */}
+        <div className="text-center space-y-3 pt-6 pb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
             Fiche
           </h1>
-          <p className="text-base text-gray-500 max-w-lg mx-auto">
+          <p className="text-base text-muted max-w-lg mx-auto">
             Le savoir technique de la communauté, capitalisé.
           </p>
         </div>
 
         {/* Barre de recherche centrale */}
-        <div className="relative">
+        <div className="relative max-w-2xl mx-auto">
           <input
             type="search"
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Rechercher une fiche par mot-clé (ex: react, css, git)..."
-            className="w-full border border-[#E5E5E5] p-3.5 pl-4 rounded bg-white text-[#1A1A1A] placeholder-gray-400 focus:outline-none focus:border-black text-sm shadow-sm"
+            placeholder="Rechercher une fiche par mot-clé (ex: react, css, tailwind)..."
+            className="w-full bg-white border border-border p-3.5 pl-4 rounded-md text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent shadow-sm text-sm transition-all"
           />
           {isPending && (
-            <span className="absolute right-4 top-3.5 text-xs text-gray-400">
+            <span className="absolute right-4 top-3.5 text-xs text-muted">
               Recherche...
             </span>
           )}
         </div>
 
         {/* Liste des fiches */}
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-2xl mx-auto">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium uppercase tracking-wider text-gray-400">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
               {query.trim() ? 'Résultats de recherche' : 'Dernières fiches publiées'}
             </h2>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted">
               {fiches.length} fiche{fiches.length > 1 ? 's' : ''}
             </span>
           </div>
 
           {fiches.length === 0 ? (
-            <div className="bg-white border border-[#E5E5E5] rounded p-12 text-center">
-              <p className="text-gray-500 text-sm">Aucune fiche trouvée.</p>
+            <div className="bg-white border border-border rounded-md p-12 text-center shadow-sm">
+              <p className="text-muted text-sm">Aucune fiche trouvée.</p>
             </div>
           ) : (
-            <div className="grid gap-3">
+            <div className="grid gap-3.5">
               {fiches.map((fiche) => {
                 const dateFormatted = new Date(fiche.created_at).toLocaleDateString('fr-FR', {
                   day: 'numeric',
@@ -145,24 +124,24 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
                   <Link
                     key={fiche.id}
                     href={`/fiche/${fiche.id}`}
-                    className="block bg-white border border-[#E5E5E5] hover:border-black rounded p-5 space-y-3 transition-colors group"
+                    className="block bg-white border border-border hover:border-gray-300 rounded-md p-5 space-y-3 transition-all shadow-sm group"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="font-semibold text-base text-[#1A1A1A] group-hover:text-black leading-snug">
+                      <h3 className="text-lg font-semibold text-foreground group-hover:text-black leading-snug">
                         {fiche.title}
                       </h3>
-                      <span className="text-xs text-gray-400 whitespace-nowrap">
+                      <span className="text-sm text-muted whitespace-nowrap">
                         {dateFormatted}
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#F5F5F5] text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/50">
                       <div className="flex flex-wrap items-center gap-1.5">
                         {fiche.tags &&
                           fiche.tags.map((tag, idx) => (
                             <span
                               key={idx}
-                              className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs"
+                              className="bg-accent-light text-accent text-xs px-2 py-1 rounded-full font-medium"
                             >
                               {tag}
                             </span>
@@ -171,19 +150,19 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
                           fiche.stack.map((item, idx) => (
                             <span
                               key={`stack-${idx}`}
-                              className="border border-[#E5E5E5] text-gray-500 px-2 py-0.5 rounded text-xs"
+                              className="bg-accent-light text-accent text-xs px-2 py-1 rounded-full font-medium"
                             >
                               {item}
                             </span>
                           ))}
                       </div>
 
-                      <div className="flex items-center gap-3 text-gray-400 font-mono text-[11px]">
+                      <div className="flex items-center gap-3 text-sm text-muted">
                         <span>Auteur : {fiche.author_name || 'Senior'}</span>
                         <span>•</span>
-                        <span>{fiche.useful_count || 0} utile</span>
+                        <span>👍 {fiche.useful_count || 0} utile</span>
                         <span>•</span>
-                        <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
+                        <span>👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
                       </div>
                     </div>
                   </Link>
@@ -192,7 +171,7 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }

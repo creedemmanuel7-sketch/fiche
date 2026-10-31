@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Logo from '@/components/Logo'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -73,59 +74,59 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] flex flex-col justify-center py-12 px-6">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-center py-12 px-6">
       <div className="max-w-md w-full mx-auto space-y-6">
         <div>
-          <Link href="/" className="text-xl font-bold tracking-tight text-[#1A1A1A]">
-            Fiche
+          <Link href="/" className="inline-block hover:opacity-90 transition-opacity">
+            <Logo />
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A] mt-4">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mt-4">
             Connexion
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Accédez à votre espace ou créez un compte
           </p>
         </div>
 
-        <form className="bg-white p-6 border border-[#E5E5E5] rounded space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+        <form className="bg-white p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-[#E5E5E5] p-2.5 rounded text-sm text-[#1A1A1A] focus:outline-none focus:border-black"
+              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
               Mot de passe
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-[#E5E5E5] p-2.5 rounded text-sm text-[#1A1A1A] focus:outline-none focus:border-black"
+              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
 
           {message && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md shadow-sm">
               {message}
             </div>
           )}
 
-          <div className="flex gap-2 pt-1">
+          <div className="flex gap-2.5 pt-2">
             <button
               type="submit"
               onClick={handleSignIn}
               disabled={loading}
-              className="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              className="bg-foreground text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black/85 disabled:opacity-50 transition-colors shadow-sm"
             >
               Se connecter
             </button>
@@ -133,18 +134,18 @@ export default function LoginPage() {
               type="button"
               onClick={handleSignUp}
               disabled={loading}
-              className="border border-[#E5E5E5] bg-white text-[#1A1A1A] px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              className="border border-border bg-white text-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm"
             >
               S'inscrire
             </button>
           </div>
 
-          <div className="pt-2 border-t border-[#F5F5F5]">
+          <div className="pt-3 border-t border-border/60">
             <button
               type="button"
               onClick={handleMagicLink}
               disabled={loading}
-              className="text-xs text-gray-500 hover:text-black underline transition-colors"
+              className="text-xs text-muted hover:text-foreground underline transition-colors"
             >
               Se connecter avec un lien magique
             </button>

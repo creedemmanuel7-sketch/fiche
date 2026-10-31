@@ -11,6 +11,11 @@ async function FicheContent({ params }: PageProps) {
   const { id } = await params
   const supabase = await createClient()
 
+  // Utilisateur connecté éventuel
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const { data: fiche, error } = await supabase
     .from('fiches')
     .select('id, title, problem, solution, original_question, tags, stack, view_count, useful_count, created_at, author_id')
@@ -43,6 +48,7 @@ async function FicheContent({ params }: PageProps) {
         ...fiche,
         author_name: authorName,
       }}
+      user={user ? { email: user.email } : null}
     />
   )
 }
@@ -51,8 +57,8 @@ export default function FichePage({ params }: PageProps) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-          <p className="text-sm text-gray-500">Chargement de la fiche...</p>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <p className="text-sm text-muted">Chargement de la fiche...</p>
         </div>
       }
     >
