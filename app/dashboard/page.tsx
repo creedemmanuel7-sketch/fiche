@@ -10,6 +10,7 @@ interface FicheItem {
   tags: string[]
   stack: string[]
   view_count: number
+  useful_count: number
   created_at: string
 }
 
@@ -25,7 +26,7 @@ async function DashboardContent() {
 
   const { data: fiches, error } = await supabase
     .from('fiches')
-    .select('id, title, tags, stack, view_count, created_at')
+    .select('id, title, tags, stack, view_count, useful_count, created_at')
     .eq('author_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -34,6 +35,11 @@ async function DashboardContent() {
   }
 
   const userFiches = (fiches as FicheItem[]) || []
+
+  // Calcul des compteurs d'impact agrégés côté serveur
+  const totalFiches = userFiches.length
+  const totalViews = userFiches.reduce((acc, f) => acc + (f.view_count || 0), 0)
+  const totalUseful = userFiches.reduce((acc, f) => acc + (f.useful_count || 0), 0)
 
   return (
     <div className="space-y-8">
@@ -61,6 +67,25 @@ async function DashboardContent() {
             Créer une nouvelle fiche
           </Link>
           <SignOutButton />
+        </div>
+      </div>
+
+      {/* Section Votre impact */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-[#1A1A1A]">Votre impact</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-[#E5E5E5] rounded p-5 space-y-1">
+            <span className="text-xs text-gray-500 font-medium">Fiches publiées</span>
+            <p className="text-3xl font-bold tracking-tight text-[#1A1A1A]">{totalFiches}</p>
+          </div>
+          <div className="bg-white border border-[#E5E5E5] rounded p-5 space-y-1">
+            <span className="text-xs text-gray-500 font-medium">Vues cumulées</span>
+            <p className="text-3xl font-bold tracking-tight text-[#1A1A1A]">{totalViews}</p>
+          </div>
+          <div className="bg-white border border-[#E5E5E5] rounded p-5 space-y-1">
+            <span className="text-xs text-gray-500 font-medium">Votes « Utile »</span>
+            <p className="text-3xl font-bold tracking-tight text-[#1A1A1A]">{totalUseful}</p>
+          </div>
         </div>
       </div>
 
@@ -118,9 +143,14 @@ async function DashboardContent() {
                       ))}
                     </div>
 
-                    <span className="text-gray-400 font-mono text-[11px]">
-                      {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded font-mono text-[11px]">
+                        👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
+                      </span>
+                      <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded font-mono text-[11px]">
+                        👍 {fiche.useful_count || 0} utile
+                      </span>
+                    </div>
                   </div>
                 </div>
               )
