@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { ThumbsUp, ThumbsDown, Eye, MessageSquare, X } from 'lucide-react'
 
 export interface FicheItem {
   id: string
@@ -87,11 +88,13 @@ export default function FichesList({ fiches, feedbackMap }: FichesListProps) {
               {/* Métriques & Feedback */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/50 text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="bg-card text-muted border border-border px-2.5 py-1 rounded-full text-xs">
-                    👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
+                  <span className="bg-background text-muted border border-border px-2.5 py-1 rounded-full text-xs inline-flex items-center gap-1">
+                    <Eye className="w-3.5 h-3.5 text-muted" />
+                    <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
                   </span>
-                  <span className="bg-card text-muted border border-border px-2.5 py-1 rounded-full text-xs">
-                    👍 {fiche.useful_count || 0} utile
+                  <span className="bg-background text-muted border border-border px-2.5 py-1 rounded-full text-xs inline-flex items-center gap-1">
+                    <ThumbsUp className="w-3.5 h-3.5 text-accent" />
+                    <span>{fiche.useful_count || 0} utile</span>
                   </span>
                 </div>
 
@@ -101,9 +104,15 @@ export default function FichesList({ fiches, feedbackMap }: FichesListProps) {
                     id={`feedback-indicator-${fiche.id}`}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-background border border-border text-foreground"
                   >
-                    <span>👍 {fb.yesCount} Oui</span>
+                    <span className="inline-flex items-center gap-1">
+                      <ThumbsUp className="w-3 h-3 text-accent" />
+                      <span>{fb.yesCount} Oui</span>
+                    </span>
                     <span className="text-muted">·</span>
-                    <span>👎 {fb.noCount} Non</span>
+                    <span className="inline-flex items-center gap-1">
+                      <ThumbsDown className="w-3 h-3 text-muted" />
+                      <span>{fb.noCount} Non</span>
+                    </span>
                   </span>
 
                   <button
@@ -149,28 +158,33 @@ export default function FichesList({ fiches, feedbackMap }: FichesListProps) {
                 className="text-muted hover:text-foreground p-1 rounded-md transition-colors"
                 aria-label="Fermer"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Compteurs Oui / Non */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-background border border-border rounded-md p-3.5 text-center space-y-1">
-                <span className="text-xs text-muted font-medium">👍 A résolu le problème</span>
+                <span className="text-xs text-muted font-medium inline-flex items-center justify-center gap-1">
+                  <ThumbsUp className="w-3.5 h-3.5 text-accent" />
+                  <span>A résolu le problème</span>
+                </span>
                 <p className="text-2xl font-bold text-accent">{activeFiche.feedback.yesCount}</p>
               </div>
               <div className="bg-background border border-border rounded-md p-3.5 text-center space-y-1">
-                <span className="text-xs text-muted font-medium">👎 N'a pas résolu</span>
+                <span className="text-xs text-muted font-medium inline-flex items-center justify-center gap-1">
+                  <ThumbsDown className="w-3.5 h-3.5 text-muted" />
+                  <span>N'a pas résolu</span>
+                </span>
                 <p className="text-2xl font-bold text-foreground">{activeFiche.feedback.noCount}</p>
               </div>
             </div>
 
             {/* Commentaires anonymes */}
             <div className="space-y-2.5">
-              <h4 className="text-xs font-semibold text-muted uppercase tracking-wider">
-                Commentaires anonymes ({activeFiche.feedback.comments.length})
+              <h4 className="text-xs font-semibold text-muted uppercase tracking-wider inline-flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5 text-muted" />
+                <span>Commentaires anonymes ({activeFiche.feedback.comments.length})</span>
               </h4>
 
               {activeFiche.feedback.comments.length === 0 ? (

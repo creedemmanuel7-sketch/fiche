@@ -1,0 +1,28 @@
+{
+  "name": "Fiche — Le savoir technique capitalisé",
+  "short_name": "Fiche",
+  "description": "Fiche transforme les questions-réponses techniques en fiches structurées, cherchables et capitalisables.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#0F6B4F",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

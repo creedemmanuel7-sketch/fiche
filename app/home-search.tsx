@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient } from '@/lib/supabase/client'
+import { ThumbsUp, Eye } from 'lucide-react'
 
 export interface PublicFiche {
   id: string
@@ -160,9 +161,15 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
                       <div className="flex items-center gap-3 text-sm text-muted">
                         <span>Auteur : {fiche.author_name || 'Senior'}</span>
                         <span>•</span>
-                        <span>👍 {fiche.useful_count || 0} utile</span>
+                        <span className="inline-flex items-center gap-1">
+                          <ThumbsUp className="w-3.5 h-3.5 text-accent" />
+                          <span>{fiche.useful_count || 0} utile</span>
+                        </span>
                         <span>•</span>
-                        <span>👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Eye className="w-3.5 h-3.5 text-muted" />
+                          <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
+                        </span>
                       </div>
                     </div>
                   </Link>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { getFingerprint } from '@/lib/fingerprint'
+import { ThumbsUp, ThumbsDown, Eye, Check } from 'lucide-react'
 
 interface FicheViewerProps {
   fiche: {
@@ -162,9 +163,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           role="status"
           className="fixed bottom-6 right-6 z-50 bg-foreground text-background px-4 py-2.5 rounded-md text-sm font-medium shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 flex items-center gap-2"
         >
-          <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-          </svg>
+          <Check className="w-4 h-4 text-accent" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -277,12 +276,12 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
             >
               {hasVoted ? (
                 <>
-                  <span>✓</span>
+                  <Check className="w-4 h-4 text-muted" />
                   <span>Déjà voté ({usefulCount})</span>
                 </>
               ) : (
                 <>
-                  <span>👍</span>
+                  <ThumbsUp className="w-4 h-4" />
                   <span>Utile ({usefulCount})</span>
                 </>
               )}
@@ -322,8 +321,9 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
             </button>
           </div>
 
-          <div className="text-sm text-muted">
-            👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
+          <div className="text-sm text-muted inline-flex items-center gap-1.5">
+            <Eye className="w-4 h-4 text-muted" />
+            <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
           </div>
         </div>
 
@@ -343,9 +343,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
 
           {feedbackSubmitted ? (
             <div className="p-3.5 bg-accent-light text-accent rounded-md text-sm font-medium flex items-center gap-2">
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="w-4 h-4 shrink-0 text-accent" />
               <span>Merci pour ton retour !</span>
             </div>
           ) : (
@@ -358,7 +356,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                   disabled={submittingFeedback}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-background border border-border hover:border-accent text-foreground hover:text-accent transition-all shadow-sm active:scale-[0.98]"
                 >
-                  <span>👍</span>
+                  <ThumbsUp className="w-4 h-4 text-accent" />
                   <span>Oui</span>
                 </button>
 
@@ -373,7 +371,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                       : 'border-border hover:border-foreground/50 text-foreground'
                   }`}
                 >
-                  <span>👎</span>
+                  <ThumbsDown className="w-4 h-4 text-muted" />
                   <span>Non</span>
                 </button>
               </div>
