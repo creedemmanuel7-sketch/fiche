@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import { createClient } from '@/lib/supabase/server'
 import SignOutButton from './signout-button'
 import DashboardTabs from './dashboard-tabs'
+import ProfileHeader from './profile-header'
 import type { FicheItem, FicheFeedbackData } from './fiches-list'
 
 async function DashboardContent() {
@@ -17,10 +18,10 @@ async function DashboardContent() {
     redirect('/login')
   }
 
-  // Récupérer le profil
+  // Récupérer le profil (rôle et display_name)
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, display_name')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -87,12 +88,10 @@ async function DashboardContent() {
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-10 space-y-8">
         {/* En-tête de bienvenue & profil */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Tableau de bord</h1>
-            <p className="text-sm text-muted mt-1">
-              Connecté en tant que <span className="text-foreground font-medium">{user.email}</span>
-            </p>
-          </div>
+          <ProfileHeader
+            initialDisplayName={profile?.display_name || null}
+            email={user.email || ''}
+          />
           <div className="flex items-center gap-3">
             <Link
               href="/create"

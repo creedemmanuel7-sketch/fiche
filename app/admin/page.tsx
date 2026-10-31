@@ -14,19 +14,14 @@ async function AdminContent() {
     redirect('/login')
   }
 
-  // 1. Vérification du rôle admin
+  // 1. Vérification du rôle admin strict dans la table profiles
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .maybeSingle()
 
-  const isAdmin =
-    profile?.role === 'admin' ||
-    user.email?.startsWith('test+') ||
-    user.email === 'admin@fiche.app'
-
-  if (!isAdmin) {
+  if (profile?.role !== 'admin') {
     redirect('/')
   }
 
