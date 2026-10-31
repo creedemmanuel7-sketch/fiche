@@ -145,7 +145,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
       {/* Formulaire de saisie brute */}
       <form
         onSubmit={handleGenerate}
-        className="bg-white p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
+        className="bg-card p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
       >
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-foreground">
@@ -156,7 +156,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             onChange={(e) => setRawQuestion(e.target.value)}
             rows={4}
             placeholder="Collez ici la question technique posée sur WhatsApp ou Facebook..."
-            className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+            className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             required
           />
         </div>
@@ -170,7 +170,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             onChange={(e) => setRawAnswer(e.target.value)}
             rows={5}
             placeholder="Collez ici la réponse apportée dans la discussion..."
-            className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+            className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             required
           />
         </div>
@@ -194,7 +194,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
         <form
           onSubmit={handlePublish}
           id="generated-fiche-form"
-          className="bg-white p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
+          className="bg-card p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
         >
           <div className="pb-3 border-b border-border">
             <h2 className="text-lg font-semibold text-foreground">
@@ -213,7 +213,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
@@ -226,7 +226,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
               rows={4}
-              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
@@ -239,7 +239,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
               value={solution}
               onChange={(e) => setSolution(e.target.value)}
               rows={6}
-              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
@@ -253,7 +253,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
               value={tagsStr}
               onChange={(e) => setTagsStr(e.target.value)}
               placeholder="react, css, git"
-              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             />
           </div>
 
@@ -266,7 +266,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
               value={stackStr}
               onChange={(e) => setStackStr(e.target.value)}
               placeholder="Next.js, Tailwind, Python"
-              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             />
           </div>
 
@@ -274,10 +274,10 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             <button
               type="submit"
               disabled={publishing}
-              className="bg-foreground text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-black/85 disabled:opacity-50 transition-all shadow-sm inline-flex items-center gap-2"
+              className="bg-foreground text-background px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-all shadow-sm inline-flex items-center gap-2"
             >
               {publishing && (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
               )}
               <span>{publishing ? 'Publication en cours...' : 'Publier la fiche'}</span>
             </button>

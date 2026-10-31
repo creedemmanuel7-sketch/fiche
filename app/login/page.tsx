@@ -88,7 +88,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form className="bg-white p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-4">
+        <form className="bg-card p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-4">
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-foreground">
               Email
@@ -97,7 +97,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
@@ -110,7 +110,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
               required
             />
           </div>
@@ -126,7 +126,7 @@ export default function LoginPage() {
               type="submit"
               onClick={handleSignIn}
               disabled={loading}
-              className="bg-foreground text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-black/85 disabled:opacity-50 transition-colors shadow-sm"
+              className="bg-foreground text-background px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-all shadow-sm"
             >
               Se connecter
             </button>
@@ -134,7 +134,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleSignUp}
               disabled={loading}
-              className="border border-border bg-white text-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm"
+              className="border border-border bg-card text-foreground px-4 py-2 rounded-md text-sm font-medium hover:border-gray-400 dark:hover:border-gray-600 disabled:opacity-50 transition-colors shadow-sm"
             >
               S'inscrire
             </button>

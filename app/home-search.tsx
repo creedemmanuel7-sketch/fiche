@@ -87,7 +87,7 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Rechercher une fiche par mot-clé (ex: react, css, tailwind)..."
-            className="w-full bg-white border border-border p-3.5 pl-4 rounded-md text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent shadow-sm text-sm transition-all"
+            className="w-full bg-card border border-border p-3.5 pl-4 rounded-md text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent shadow-sm text-sm transition-all"
           />
           {isPending && (
             <span className="absolute right-4 top-3.5 text-xs text-muted">
@@ -108,7 +108,7 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
           </div>
 
           {fiches.length === 0 ? (
-            <div className="bg-white border border-border rounded-md p-12 text-center shadow-sm">
+            <div className="bg-card border border-border rounded-md p-12 text-center shadow-sm">
               <p className="text-muted text-sm">Aucune fiche trouvée.</p>
             </div>
           ) : (
@@ -124,10 +124,10 @@ export default function HomeSearch({ initialFiches, user }: HomeSearchProps) {
                   <Link
                     key={fiche.id}
                     href={`/fiche/${fiche.id}`}
-                    className="block bg-white border border-border hover:border-gray-300 rounded-md p-5 space-y-3 transition-all shadow-sm group"
+                    className="block bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 rounded-md p-5 space-y-3 transition-all shadow-sm group"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="text-lg font-semibold text-foreground group-hover:text-black leading-snug">
+                      <h3 className="text-lg font-semibold text-foreground leading-snug">
                         {fiche.title}
                       </h3>
                       <span className="text-sm text-muted whitespace-nowrap">

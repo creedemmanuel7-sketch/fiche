@@ -125,7 +125,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
         </div>
 
         {/* Bloc Problème */}
-        <section className="bg-white border border-border rounded-md p-6 space-y-2 shadow-sm">
+        <section className="bg-card border border-border rounded-md p-6 space-y-2 shadow-sm">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
             Problème
           </h2>
@@ -135,7 +135,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
         </section>
 
         {/* Bloc Solution */}
-        <section className="bg-white border border-border rounded-md p-6 space-y-2 shadow-sm">
+        <section className="bg-card border border-border rounded-md p-6 space-y-2 shadow-sm">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
             Solution
           </h2>
@@ -146,7 +146,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
 
         {/* Bloc dépliable Question d'origine (accordéon propre avec chevron) */}
         {fiche.original_question && (
-          <div className="border border-border bg-gray-50/70 rounded-md p-4 transition-all">
+          <div className="border border-border bg-card/70 rounded-md p-4 transition-all">
             <button
               type="button"
               onClick={() => setShowOriginal(!showOriginal)}
@@ -181,8 +181,8 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
             disabled={hasVoted || voting}
             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all shadow-sm ${
               hasVoted
-                ? 'bg-gray-100 text-muted cursor-not-allowed border border-border'
-                : 'bg-foreground text-white hover:bg-black/85 active:scale-[0.98]'
+                ? 'bg-card text-muted cursor-not-allowed border border-border'
+                : 'bg-foreground text-background hover:opacity-90 active:scale-[0.98]'
             }`}
           >
             {hasVoted ? (

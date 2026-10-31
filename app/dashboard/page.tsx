@@ -58,7 +58,7 @@ async function DashboardContent() {
           <div className="flex items-center gap-3">
             <Link
               href="/create"
-              className="bg-foreground text-white hover:bg-black/85 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm"
+              className="bg-foreground text-background hover:opacity-90 px-4 py-2 rounded-md text-sm font-medium transition-all shadow-sm"
             >
               Créer une nouvelle fiche
             </Link>
@@ -70,15 +70,15 @@ async function DashboardContent() {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-foreground">Votre impact</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white border border-border rounded-md p-5 space-y-1 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-5 space-y-1 shadow-sm">
               <span className="text-xs text-muted font-medium uppercase tracking-wider">Fiches publiées</span>
               <p className="text-3xl font-bold tracking-tight text-foreground">{totalFiches}</p>
             </div>
-            <div className="bg-white border border-border rounded-md p-5 space-y-1 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-5 space-y-1 shadow-sm">
               <span className="text-xs text-muted font-medium uppercase tracking-wider">Vues cumulées</span>
               <p className="text-3xl font-bold tracking-tight text-foreground">{totalViews}</p>
             </div>
-            <div className="bg-white border border-border rounded-md p-5 space-y-1 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-5 space-y-1 shadow-sm">
               <span className="text-xs text-muted font-medium uppercase tracking-wider">Votes « Utile »</span>
               <p className="text-3xl font-bold tracking-tight text-foreground">{totalUseful}</p>
             </div>
@@ -95,7 +95,7 @@ async function DashboardContent() {
           </div>
 
           {userFiches.length === 0 ? (
-            <div className="bg-white border border-border rounded-md p-10 text-center shadow-sm">
+            <div className="bg-card border border-border rounded-md p-10 text-center shadow-sm">
               <p className="text-muted text-sm">Tu n'as pas encore créé de fiche.</p>
             </div>
           ) : (
@@ -110,7 +110,7 @@ async function DashboardContent() {
                 return (
                   <div
                     key={fiche.id}
-                    className="bg-white border border-border hover:border-gray-300 rounded-md p-5 space-y-3 transition-all shadow-sm"
+                    className="bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 rounded-md p-5 space-y-3 transition-all shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <Link
