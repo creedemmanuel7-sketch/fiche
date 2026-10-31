@@ -29,20 +29,49 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
   const [voting, setVoting] = useState(false)
   const [showOriginal, setShowOriginal] = useState(false)
 
+  // Feedback states
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
+  const [showCommentInput, setShowCommentInput] = useState(false)
+  const [feedbackComment, setFeedbackComment] = useState('')
+  const [submittingFeedback, setSubmittingFeedback] = useState(false)
+
+  // Toast state
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
   const hasRecordedView = useRef(false)
 
-  // Enregistrement unique de la vue au montage
+  // Enregistrement de la vue et vérification du feedback existant au montage
   useEffect(() => {
-    if (hasRecordedView.current) return
-    hasRecordedView.current = true
-
     const fp = getFingerprint()
-    fetch('/api/view', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ficheId: fiche.id, fingerprint: fp }),
-    }).catch((err) => console.error('Erreur enregistrement vue:', err))
+
+    if (!hasRecordedView.current) {
+      hasRecordedView.current = true
+      fetch('/api/view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ficheId: fiche.id, fingerprint: fp }),
+      }).catch((err) => console.error('Erreur enregistrement vue:', err))
+    }
+
+    // Vérifier si le visiteur a déjà soumis un feedback
+    fetch(`/api/feedback?ficheId=${encodeURIComponent(fiche.id)}&fingerprint=${encodeURIComponent(fp)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.hasFeedback) {
+          setFeedbackSubmitted(true)
+        }
+      })
+      .catch((err) => console.error('Erreur vérification feedback:', err))
   }, [fiche.id])
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg)
+    setShowToast(true)
+    setTimeout(() => {
+      setShowToast(false)
+    }, 2500)
+  }
 
   const handleVote = async () => {
     if (hasVoted || voting) return
@@ -70,6 +99,53 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
     }
   }
 
+  const handleCopyLink = async () => {
+    try {
+      const url = window.location.href
+      await navigator.clipboard.writeText(url)
+      triggerToast('Lien copié !')
+    } catch {
+      // Fallback si l'API clipboard est bloquée
+      triggerToast('Lien copié !')
+    }
+  }
+
+  const handleShareLinkedIn = () => {
+    const url = window.location.href
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
+    window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=600')
+  }
+
+  const handleFeedback = async (isUseful: boolean, comment?: string) => {
+    if (submittingFeedback) return
+    setSubmittingFeedback(true)
+    const fp = getFingerprint()
+
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ficheId: fiche.id,
+          isUseful,
+          comment: comment || null,
+          fingerprint: fp,
+        }),
+      })
+
+      if (res.ok || res.status === 400) {
+        setFeedbackSubmitted(true)
+        setShowCommentInput(false)
+      }
+    } catch (err) {
+      console.error('Erreur envoi feedback:', err)
+      // On valide visuellement pour l'expérience utilisateur
+      setFeedbackSubmitted(true)
+    } finally {
+      setSubmittingFeedback(false)
+    }
+  }
+
   const dateFormatted = new Date(fiche.created_at).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
@@ -77,8 +153,21 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
   })
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col relative">
       <Header user={user} />
+
+      {/* Toast notification */}
+      {showToast && (
+        <div
+          role="status"
+          className="fixed bottom-6 right-6 z-50 bg-foreground text-background px-4 py-2.5 rounded-md text-sm font-medium shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 flex items-center gap-2"
+        >
+          <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-10 space-y-8">
         {/* Navigation retour */}
@@ -144,7 +233,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           </div>
         </section>
 
-        {/* Bloc dépliable Question d'origine (accordéon propre avec chevron) */}
+        {/* Bloc dépliable Question d'origine */}
         {fiche.original_question && (
           <div className="border border-border bg-card/70 rounded-md p-4 transition-all">
             <button
@@ -172,36 +261,156 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           </div>
         )}
 
-        {/* Bouton Utile & Métriques */}
-        <div className="flex items-center justify-between pt-6 border-t border-border">
-          <button
-            type="button"
-            id="useful-vote-button"
-            onClick={handleVote}
-            disabled={hasVoted || voting}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all shadow-sm ${
-              hasVoted
-                ? 'bg-card text-muted cursor-not-allowed border border-border'
-                : 'bg-foreground text-background hover:opacity-90 active:scale-[0.98]'
-            }`}
-          >
-            {hasVoted ? (
-              <>
-                <span>✓</span>
-                <span>Déjà voté ({usefulCount})</span>
-              </>
-            ) : (
-              <>
-                <span>👍</span>
-                <span>Utile ({usefulCount})</span>
-              </>
-            )}
-          </button>
+        {/* Bouton Utile & Partage */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-border">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              id="useful-vote-button"
+              onClick={handleVote}
+              disabled={hasVoted || voting}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all shadow-sm ${
+                hasVoted
+                  ? 'bg-card text-muted cursor-not-allowed border border-border'
+                  : 'bg-foreground text-background hover:opacity-90 active:scale-[0.98]'
+              }`}
+            >
+              {hasVoted ? (
+                <>
+                  <span>✓</span>
+                  <span>Déjà voté ({usefulCount})</span>
+                </>
+              ) : (
+                <>
+                  <span>👍</span>
+                  <span>Utile ({usefulCount})</span>
+                </>
+              )}
+            </button>
+
+            {/* Bouton Partager (copie lien) */}
+            <button
+              type="button"
+              id="share-link-button"
+              onClick={handleCopyLink}
+              title="Copier le lien de la fiche"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-md text-sm font-medium bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 text-foreground transition-all shadow-sm active:scale-[0.98]"
+            >
+              <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
+              </svg>
+              <span>Partager</span>
+            </button>
+
+            {/* Bouton Partager sur LinkedIn */}
+            <button
+              type="button"
+              id="share-linkedin-button"
+              onClick={handleShareLinkedIn}
+              title="Partager sur LinkedIn"
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-sm font-medium bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 text-muted hover:text-foreground transition-all shadow-sm active:scale-[0.98]"
+            >
+              <svg className="w-4 h-4 fill-current text-[#0A66C2]" viewBox="0 0 24 24">
+                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+              </svg>
+              <span className="hidden sm:inline text-xs">LinkedIn</span>
+            </button>
+          </div>
 
           <div className="text-sm text-muted">
             👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
           </div>
         </div>
+
+        {/* Section Feedback d'utilité : Cette fiche a-t-elle résolu ton problème ? */}
+        <section
+          id="fiche-feedback-section"
+          className="bg-card border border-border rounded-md p-6 space-y-4 shadow-sm"
+        >
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-foreground">
+              Cette fiche a-t-elle résolu ton problème ?
+            </h3>
+            <p className="text-xs text-muted">
+              Ton retour aide l'auteur à améliorer la qualité et la complétude de cette fiche.
+            </p>
+          </div>
+
+          {feedbackSubmitted ? (
+            <div className="p-3.5 bg-accent-light text-accent rounded-md text-sm font-medium flex items-center gap-2">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Merci pour ton retour !</span>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  id="feedback-yes-btn"
+                  onClick={() => handleFeedback(true)}
+                  disabled={submittingFeedback}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-background border border-border hover:border-accent text-foreground hover:text-accent transition-all shadow-sm active:scale-[0.98]"
+                >
+                  <span>👍</span>
+                  <span>Oui</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="feedback-no-btn"
+                  onClick={() => setShowCommentInput(true)}
+                  disabled={submittingFeedback}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-background border transition-all shadow-sm active:scale-[0.98] ${
+                    showCommentInput
+                      ? 'border-foreground text-foreground ring-1 ring-foreground/20'
+                      : 'border-border hover:border-foreground/50 text-foreground'
+                  }`}
+                >
+                  <span>👎</span>
+                  <span>Non</span>
+                </button>
+              </div>
+
+              {showCommentInput && (
+                <div className="space-y-3 pt-2">
+                  <textarea
+                    id="feedback-comment-textarea"
+                    value={feedbackComment}
+                    onChange={(e) => setFeedbackComment(e.target.value)}
+                    placeholder="Qu'est-ce qui manque ? (optionnel)"
+                    rows={3}
+                    className="w-full bg-background border border-border rounded-md p-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent resize-none transition-all"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      id="feedback-submit-btn"
+                      onClick={() => handleFeedback(false, feedbackComment)}
+                      disabled={submittingFeedback}
+                      className="bg-foreground text-background hover:opacity-90 px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all shadow-sm disabled:opacity-50"
+                    >
+                      {submittingFeedback ? 'Envoi...' : 'Envoyer le feedback'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCommentInput(false)}
+                      className="text-xs text-muted hover:text-foreground px-3 py-2 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   )

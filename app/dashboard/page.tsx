@@ -4,16 +4,7 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient } from '@/lib/supabase/server'
 import SignOutButton from './signout-button'
-
-interface FicheItem {
-  id: string
-  title: string
-  tags: string[]
-  stack: string[]
-  view_count: number
-  useful_count: number
-  created_at: string
-}
+import FichesList, { FicheItem, FicheFeedbackData } from './fiches-list'
 
 async function DashboardContent() {
   const supabase = await createClient()
@@ -36,6 +27,43 @@ async function DashboardContent() {
   }
 
   const userFiches = (fiches as FicheItem[]) || []
+  const ficheIds = userFiches.map((f) => f.id)
+
+  const feedbackMap: Record<string, FicheFeedbackData> = {}
+  userFiches.forEach((f) => {
+    feedbackMap[f.id] = { yesCount: 0, noCount: 0, comments: [] }
+  })
+
+  if (ficheIds.length > 0) {
+    try {
+      const { data: feedbacks, error: fbError } = await supabase
+        .from('fiche_feedback')
+        .select('id, fiche_id, is_useful, comment, created_at')
+        .in('fiche_id', ficheIds)
+
+      if (!fbError && feedbacks) {
+        feedbacks.forEach((fb) => {
+          if (!feedbackMap[fb.fiche_id]) {
+            feedbackMap[fb.fiche_id] = { yesCount: 0, noCount: 0, comments: [] }
+          }
+          if (fb.is_useful) {
+            feedbackMap[fb.fiche_id].yesCount += 1
+          } else {
+            feedbackMap[fb.fiche_id].noCount += 1
+            if (fb.comment && fb.comment.trim()) {
+              feedbackMap[fb.fiche_id].comments.push({
+                id: fb.id,
+                comment: fb.comment.trim(),
+                created_at: fb.created_at,
+              })
+            }
+          }
+        })
+      }
+    } catch (e) {
+      console.error('Erreur chargement feedback:', e)
+    }
+  }
 
   // Calcul des compteurs d'impact agrégés côté serveur
   const totalFiches = userFiches.length
@@ -99,66 +127,7 @@ async function DashboardContent() {
               <p className="text-muted text-sm">Tu n'as pas encore créé de fiche.</p>
             </div>
           ) : (
-            <div className="grid gap-3.5">
-              {userFiches.map((fiche) => {
-                const dateFormatted = new Date(fiche.created_at).toLocaleDateString('fr-FR', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })
-
-                return (
-                  <div
-                    key={fiche.id}
-                    className="bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 rounded-md p-5 space-y-3 transition-all shadow-sm"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <Link
-                        href={`/fiche/${fiche.id}`}
-                        className="text-lg font-semibold text-foreground hover:underline leading-snug"
-                      >
-                        {fiche.title}
-                      </Link>
-                      <span className="text-sm text-muted whitespace-nowrap">
-                        {dateFormatted}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/50">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {fiche.tags &&
-                          fiche.tags.map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className="bg-accent-light text-accent text-xs px-2 py-1 rounded-full font-medium"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        {fiche.stack &&
-                          fiche.stack.map((item, idx) => (
-                            <span
-                              key={`stack-${idx}`}
-                              className="bg-accent-light text-accent text-xs px-2 py-1 rounded-full font-medium"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium">
-                          👁 {fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}
-                        </span>
-                        <span className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium">
-                          👍 {fiche.useful_count || 0} utile
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            <FichesList fiches={userFiches} feedbackMap={feedbackMap} />
           )}
         </div>
       </main>
@@ -168,7 +137,13 @@ async function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center text-sm text-muted">Chargement...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center text-sm text-muted">
+          Chargement...
+        </div>
+      }
+    >
       <DashboardContent />
     </Suspense>
   )
