@@ -1,25 +1,46 @@
-import Link from 'next/link'
+import { Suspense } from 'react'
+import { createClient } from '@/lib/supabase/server'
+import HomeSearch, { type PublicFiche } from './home-search'
 
-export default function Home() {
+async function HomeContent() {
+  const supabase = await createClient()
+
+  // 1. Vérifier si un utilisateur est connecté
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // 2. Récupérer les 10 dernières fiches
+  const { data: fiches, error } = await supabase
+    .from('fiches')
+    .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  if (error) {
+    console.error('Erreur chargement dernières fiches:', error)
+  }
+
+  const initialFiches = (fiches as PublicFiche[]) || []
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#1A1A1A] flex flex-col justify-center px-6">
-      <div className="max-w-md w-full mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#1A1A1A]">Fiche</h1>
-          <p className="text-sm text-gray-500 mt-2">
-            Transformez vos échanges techniques bruts en fiches structurées, cherchables et capitalisables.
-          </p>
-        </div>
+    <HomeSearch
+      initialFiches={initialFiches}
+      user={user ? { email: user.email } : null}
+    />
+  )
+}
 
-        <div className="pt-2">
-          <Link
-            href="/login"
-            className="inline-block bg-black text-white px-5 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition-colors"
-          >
-            Accéder à l'application
-          </Link>
+export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+          <p className="text-sm text-gray-500">Chargement...</p>
         </div>
-      </div>
-    </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   )
 }

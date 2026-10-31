@@ -40,6 +40,14 @@ async function DashboardContent() {
       {/* En-tête */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#E5E5E5]">
         <div>
+          <div className="mb-2">
+            <Link
+              href="/"
+              className="text-xs text-gray-500 hover:text-black transition-colors"
+            >
+              ← Retour à l'accueil
+            </Link>
+          </div>
           <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A]">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
             Connecté en tant que <span className="text-[#1A1A1A] font-medium">{user.email}</span>
@@ -79,9 +87,12 @@ async function DashboardContent() {
                   className="bg-white border border-[#E5E5E5] rounded p-5 space-y-3"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <h3 className="font-medium text-[#1A1A1A] text-base leading-snug">
+                    <Link
+                      href={`/fiche/${fiche.id}`}
+                      className="font-medium text-[#1A1A1A] text-base leading-snug hover:underline"
+                    >
                       {fiche.title}
-                    </h3>
+                    </Link>
                     <div className="text-xs text-gray-400 whitespace-nowrap">
                       {dateFormatted}
                     </div>
