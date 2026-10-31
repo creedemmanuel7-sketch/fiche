@@ -44,11 +44,26 @@ async function AdminContent() {
   let recentFeedbacks: AdminFeedback[] = []
 
   try {
-    // Total Fiches & Total Vues
-    const { data: fichesData, count: fichesCount } = await adminClient
+    // Total Fiches & Total Vues (avec repli si is_hidden n'existe pas encore)
+    let fichesData: any[] | null = null
+    let fichesCount: number | null = null
+
+    const res = await adminClient
       .from('fiches')
       .select('id, title, created_at, view_count, useful_count, is_hidden', { count: 'exact' })
       .order('created_at', { ascending: false })
+
+    if (res.error && res.error.code === '42703') {
+      const fallbackRes = await adminClient
+        .from('fiches')
+        .select('id, title, created_at, view_count, useful_count', { count: 'exact' })
+        .order('created_at', { ascending: false })
+      fichesData = fallbackRes.data
+      fichesCount = fallbackRes.count
+    } else {
+      fichesData = res.data
+      fichesCount = res.count
+    }
 
     if (fichesCount !== null) totalFiches = fichesCount
     if (fichesData) {

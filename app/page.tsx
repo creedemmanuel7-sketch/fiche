@@ -42,27 +42,33 @@ async function HomeContent() {
     }
   }
 
-  // 2. Récupérer les fiches publiques (non masquées)
-  let query = supabase
+  // 2. Récupérer les fiches publiques (avec repli gracieux si is_hidden n'existe pas encore)
+  let fichesData: PublicFiche[] = []
+
+  const { data: withHidden, error: hiddenError } = await supabase
     .from('fiches')
     .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, is_hidden')
     .order('created_at', { ascending: false })
     .limit(100)
 
-  const { data: fiches, error } = await query
+  if (!hiddenError && withHidden) {
+    fichesData = withHidden.filter((f) => !(f as { is_hidden?: boolean }).is_hidden) as PublicFiche[]
+  } else {
+    const { data: fallbackData, error: fbError } = await supabase
+      .from('fiches')
+      .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100)
 
-  if (error) {
-    console.error('Erreur chargement fiches:', error)
+    if (fbError) {
+      console.error('Erreur chargement fiches:', fbError)
+    }
+    fichesData = (fallbackData as PublicFiche[]) || []
   }
-
-  // Filtrer les fiches masquées côté serveur
-  const initialFiches = ((fiches as (PublicFiche & { is_hidden?: boolean })[]) || []).filter(
-    (f) => !f.is_hidden
-  )
 
   return (
     <HomeSearch
-      initialFiches={initialFiches}
+      initialFiches={fichesData}
       user={
         user
           ? {

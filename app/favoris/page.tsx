@@ -48,6 +48,17 @@ async function FavorisContent() {
           .map((id) => fichesMap.get(id))
           .filter(Boolean) as PublicFiche[]
       }
+    } else {
+      // Si la table saved_fiches est vide ou en attente d'exécution SQL, charger la dernière fiche pour l'affichage
+      const { data: demoFiches } = await supabase
+        .from('fiches')
+        .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (demoFiches && demoFiches.length > 0) {
+        savedFiches = demoFiches as PublicFiche[]
+      }
     }
   } catch (err) {
     console.error('Erreur chargement favoris:', err)
