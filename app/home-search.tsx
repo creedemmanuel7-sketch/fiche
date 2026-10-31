@@ -1,23 +1,20 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import { ThumbsUp, Eye, Bookmark, Filter, Sparkles, ArrowUpDown, Check } from 'lucide-react'
+import FicheCard, { type PublicFiche } from '@/components/FicheCard'
+import {
+  Sparkles,
+  ArrowUpDown,
+  Check,
+  Filter,
+  Search,
+  X,
+  ChevronDown,
+} from 'lucide-react'
 
-export interface PublicFiche {
-  id: string
-  title: string
-  problem?: string
-  solution?: string
-  tags: string[]
-  stack: string[]
-  author_id: string
-  author_name?: string
-  view_count: number
-  useful_count: number
-  created_at: string
-}
+export type { PublicFiche }
 
 interface HomeSearchProps {
   initialFiches: PublicFiche[]
@@ -27,16 +24,43 @@ interface HomeSearchProps {
     preferred_stacks?: string[]
   } | null
   initialSavedIds?: string[]
+  title?: string
+  subtitle?: string
 }
 
 type SortOption = 'recent' | 'useful' | 'views'
 
-export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }: HomeSearchProps) {
+export default function HomeSearch({
+  initialFiches,
+  user,
+  initialSavedIds = [],
+  title = 'Explorer les fiches',
+  subtitle = 'Recherchez, filtrez par stack et accédez à tout le savoir capitalisé.',
+}: HomeSearchProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedStack, setSelectedStack] = useState<string>('all')
+  const [selectedStacks, setSelectedStacks] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<SortOption>('recent')
   const [savedIds, setSavedIds] = useState<string[]>(initialSavedIds)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  // Gestion du dropdown de sélection de stack avec recherche interne
+  const [isStackDropdownOpen, setIsStackDropdownOpen] = useState(false)
+  const [stackSearchQuery, setStackSearchQuery] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Pagination / Charger plus
+  const [visibleCount, setVisibleCount] = useState(12)
+
+  // Fermer le dropdown en cliquant à l'extérieur
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsStackDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Extraire la liste dynamique des stacks existantes
   const availableStacks = useMemo(() => {
@@ -47,6 +71,13 @@ export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }
     })
     return Array.from(stackSet).sort((a, b) => a.localeCompare(b))
   }, [initialFiches])
+
+  // Stacks filtrées à l'intérieur du dropdown selon la saisie
+  const filteredAvailableStacks = useMemo(() => {
+    const q = stackSearchQuery.trim().toLowerCase()
+    if (!q) return availableStacks
+    return availableStacks.filter((s) => s.toLowerCase().includes(q))
+  }, [availableStacks, stackSearchQuery])
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg)
@@ -86,13 +117,34 @@ export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }
     }
   }
 
-  // Filtrage combiné (Recherche textuelle + Stack) & Tri
+  const handleToggleStack = (stk: string) => {
+    if (selectedStacks.includes(stk)) {
+      setSelectedStacks(selectedStacks.filter((s) => s !== stk))
+    } else {
+      setSelectedStacks([...selectedStacks, stk])
+    }
+    setVisibleCount(12)
+  }
+
+  const handleRemoveStack = (stk: string) => {
+    setSelectedStacks(selectedStacks.filter((s) => s !== stk))
+    setVisibleCount(12)
+  }
+
+  const handleClearAllFilters = () => {
+    setSelectedStacks([])
+    setSearchQuery('')
+    setSortBy('recent')
+    setVisibleCount(12)
+  }
+
+  // Filtrage combiné (Recherche textuelle + Stacks) & Tri
   const filteredFiches = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
 
     return initialFiches
       .filter((fiche) => {
-        // Filtre de recherche
+        // Filtre de recherche textuelle
         const matchesQuery =
           !query ||
           fiche.title.toLowerCase().includes(query) ||
@@ -100,11 +152,14 @@ export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }
           fiche.tags?.some((t) => t.toLowerCase().includes(query)) ||
           fiche.stack?.some((s) => s.toLowerCase().includes(query))
 
-        // Filtre de stack
+        // Filtre de stacks multiples
         const matchesStack =
-          selectedStack === 'all' ||
-          fiche.stack?.some((s) => s.toLowerCase() === selectedStack.toLowerCase()) ||
-          fiche.tags?.some((t) => t.toLowerCase() === selectedStack.toLowerCase())
+          selectedStacks.length === 0 ||
+          selectedStacks.some(
+            (sel) =>
+              fiche.stack?.some((s) => s.toLowerCase() === sel.toLowerCase()) ||
+              fiche.tags?.some((t) => t.toLowerCase() === sel.toLowerCase())
+          )
 
         return matchesQuery && matchesStack
       })
@@ -120,7 +175,12 @@ export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }
         }
         return 0
       })
-  }, [initialFiches, searchQuery, selectedStack, sortBy])
+  }, [initialFiches, searchQuery, selectedStacks, sortBy])
+
+  // Fiches visibles selon pagination
+  const visibleFiches = useMemo(() => {
+    return filteredFiches.slice(0, visibleCount)
+  }, [filteredFiches, visibleCount])
 
   // Fiches recommandées "Pour toi" (si connecté avec stacks préférées)
   const recommendedFiches = useMemo(() => {
@@ -153,18 +213,18 @@ export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-10 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-10 space-y-6">
         {/* En-tête sobre */}
         <div className="text-center space-y-2 pt-2 pb-1">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Fiche
+            {title}
           </h1>
           <p className="text-sm sm:text-base text-muted max-w-lg mx-auto">
-            Le savoir technique de la communauté, structuré et capitalisé.
+            {subtitle}
           </p>
         </div>
 
-        {/* Section Recommandée "Pour toi" */}
+        {/* Section Recommandée "Pour toi" (si l'utilisateur a configuré des stacks) */}
         {recommendedFiches.length > 0 && (
           <section className="bg-card border border-border rounded-lg p-5 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
@@ -179,28 +239,12 @@ export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {recommendedFiches.map((fiche) => (
-                <Link
+                <FicheCard
                   key={`rec-${fiche.id}`}
-                  href={`/fiche/${fiche.id}`}
-                  className="bg-background border border-border hover:border-accent/60 rounded-md p-4 space-y-2 transition-all shadow-xs flex flex-col justify-between"
-                >
-                  <div className="space-y-1.5">
-                    <span className="text-[11px] text-accent font-medium">Recommandé</span>
-                    <h3 className="text-sm font-semibold text-foreground line-clamp-2">
-                      {fiche.title}
-                    </h3>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-muted pt-2 border-t border-border/40">
-                    <span className="inline-flex items-center gap-1">
-                      <ThumbsUp className="w-3 h-3 text-accent" />
-                      {fiche.useful_count || 0}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Eye className="w-3 h-3 text-muted" />
-                      {fiche.view_count || 0}
-                    </span>
-                  </div>
-                </Link>
+                  fiche={fiche}
+                  isSaved={savedIds.includes(fiche.id)}
+                  onToggleFavorite={handleToggleFavorite}
+                />
               ))}
             </div>
           </section>
@@ -208,193 +252,194 @@ export default function HomeSearch({ initialFiches, user, initialSavedIds = [] }
 
         {/* Barre de recherche centrale */}
         <div className="max-w-2xl mx-auto">
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher une fiche par problème, mot-clé ou techno (ex: React, CORS, Next.js)..."
-            className="w-full bg-card border border-border p-3.5 pl-4 rounded-md text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent shadow-sm text-sm transition-all"
-          />
+          <div className="relative">
+            <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setVisibleCount(12)
+              }}
+              placeholder="Rechercher une fiche par problème, mot-clé ou techno (ex: React, CORS, Next.js)..."
+              className="w-full bg-card border border-border p-3.5 pl-10 rounded-md text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent shadow-sm text-sm transition-all"
+            />
+          </div>
         </div>
 
-        {/* Disposition Principale : Sidebar Filtres + Grille */}
-        <div className="flex flex-col md:flex-row items-start gap-8">
-          {/* Sidebar de filtres (à gauche sur desktop, en haut sur mobile) */}
-          <aside className="w-full md:w-64 shrink-0 bg-card border border-border rounded-lg p-5 space-y-6 shadow-sm">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted inline-flex items-center gap-1.5">
-                <Filter className="w-3.5 h-3.5 text-accent" />
-                <span>Filtres</span>
-              </span>
-              {(selectedStack !== 'all' || searchQuery) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedStack('all')
-                    setSearchQuery('')
-                  }}
-                  className="text-xs text-accent hover:underline"
+        {/* ========================================================= */}
+        {/* NOUVELLE BARRE DE FILTRES HORIZONTALE ET STICKY AU SCROLL */}
+        {/* ========================================================= */}
+        <div className="sticky top-[60px] z-10 bg-background/95 backdrop-blur border-b border-border py-3 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10">
+          <div className="flex items-center justify-between gap-4">
+            {/* Contrôles de filtres et badges */}
+            <div className="flex items-center gap-3 overflow-x-auto py-1 scrollbar-none flex-1 min-w-0">
+              {/* Menu déroulant Trier par */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <ArrowUpDown className="w-3.5 h-3.5 text-muted shrink-0" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="bg-card border border-border text-foreground text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent font-medium shadow-xs cursor-pointer"
+                  title="Trier par"
                 >
-                  Réinitialiser
-                </button>
-              )}
-            </div>
+                  <option value="recent">Plus récentes</option>
+                  <option value="useful">Plus utiles</option>
+                  <option value="views">Plus vues</option>
+                </select>
+              </div>
 
-            {/* Tri */}
-            <div className="space-y-2.5">
-              <label className="text-xs font-semibold text-foreground inline-flex items-center gap-1.5">
-                <ArrowUpDown className="w-3.5 h-3.5 text-muted" />
-                <span>Trier par</span>
-              </label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent shadow-xs"
-              >
-                <option value="recent">Plus récentes</option>
-                <option value="useful">Plus utiles (votes)</option>
-                <option value="views">Plus vues</option>
-              </select>
-            </div>
-
-            {/* Filtre par Stack */}
-            <div className="space-y-2.5">
-              <label className="text-xs font-semibold text-foreground">
-                Stack technique
-              </label>
-              <div className="flex flex-wrap md:flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
+              {/* Bouton Filtrer par stack avec Dropdown & Recherche interne */}
+              <div className="relative shrink-0" ref={dropdownRef}>
                 <button
                   type="button"
-                  onClick={() => setSelectedStack('all')}
-                  className={`text-left text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
-                    selectedStack === 'all'
-                      ? 'bg-accent text-white dark:text-background'
-                      : 'text-muted hover:text-foreground hover:bg-background'
+                  onClick={() => setIsStackDropdownOpen((prev) => !prev)}
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border transition-all shadow-xs ${
+                    isStackDropdownOpen || selectedStacks.length > 0
+                      ? 'bg-accent-light text-accent border-accent/40'
+                      : 'bg-card text-foreground border-border hover:bg-background'
                   }`}
                 >
-                  Toutes les stacks
+                  <Filter className="w-3.5 h-3.5 text-accent" />
+                  <span>Filtrer par stack</span>
+                  {selectedStacks.length > 0 && (
+                    <span className="bg-accent text-white dark:text-background text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-0.5">
+                      {selectedStacks.length}
+                    </span>
+                  )}
+                  <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform ${isStackDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {availableStacks.map((stk) => {
-                  const isSelected = selectedStack.toLowerCase() === stk.toLowerCase()
-                  return (
-                    <button
-                      key={stk}
-                      type="button"
-                      onClick={() => setSelectedStack(isSelected ? 'all' : stk)}
-                      className={`text-left text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors truncate ${
-                        isSelected
-                          ? 'bg-accent text-white dark:text-background'
-                          : 'text-muted hover:text-foreground hover:bg-background'
-                      }`}
-                    >
-                      {stk}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </aside>
+                {/* Menu déroulant des stacks avec recherche interne */}
+                {isStackDropdownOpen && (
+                  <div className="absolute left-0 mt-2 w-72 max-w-[85vw] bg-card border border-border rounded-lg shadow-xl p-3 z-30 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={stackSearchQuery}
+                        onChange={(e) => setStackSearchQuery(e.target.value)}
+                        placeholder="Rechercher une stack (ex: React)..."
+                        autoFocus
+                        className="w-full bg-background border border-border rounded-md pl-8 pr-2.5 py-1.5 text-xs text-foreground placeholder-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                      />
+                    </div>
 
-          {/* Grille des fiches */}
-          <section className="flex-1 w-full space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted uppercase tracking-wider">
-                {filteredFiches.length} fiche{filteredFiches.length > 1 ? 's' : ''} disponible{filteredFiches.length > 1 ? 's' : ''}
-              </span>
-              {selectedStack !== 'all' && (
-                <span className="text-xs bg-accent-light text-accent px-2.5 py-0.5 rounded-full font-medium">
-                  Filtre actif : {selectedStack}
+                    <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
+                      {filteredAvailableStacks.length === 0 ? (
+                        <p className="text-xs text-muted text-center py-3">
+                          Aucune technologie trouvée.
+                        </p>
+                      ) : (
+                        filteredAvailableStacks.map((stk) => {
+                          const isSelected = selectedStacks.includes(stk)
+                          return (
+                            <button
+                              key={stk}
+                              type="button"
+                              onClick={() => handleToggleStack(stk)}
+                              className={`w-full flex items-center justify-between text-left text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
+                                isSelected
+                                  ? 'bg-accent text-white dark:text-background font-semibold'
+                                  : 'text-foreground hover:bg-background'
+                              }`}
+                            >
+                              <span className="truncate">{stk}</span>
+                              {isSelected && <Check className="w-3.5 h-3.5 shrink-0 ml-1.5" />}
+                            </button>
+                          )
+                        })
+                      )}
+                    </div>
+
+                    {selectedStacks.length > 0 && (
+                      <div className="pt-2 border-t border-border flex items-center justify-between text-[11px]">
+                        <span className="text-muted">{selectedStacks.length} active(s)</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedStacks([])}
+                          className="text-accent hover:underline font-medium"
+                        >
+                          Effacer la sélection
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Badges des stacks sélectionnées avec bouton "x" pour retirer */}
+              {selectedStacks.map((stk) => (
+                <span
+                  key={`badge-${stk}`}
+                  className="inline-flex items-center gap-1.5 bg-accent-light text-accent text-xs font-medium px-2.5 py-1 rounded-full shrink-0 shadow-2xs animate-in fade-in"
+                >
+                  <span>{stk}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveStack(stk)}
+                    className="hover:opacity-75 focus:outline-none"
+                    title={`Retirer le filtre ${stk}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </span>
+              ))}
+
+              {/* Bouton Réinitialiser si recherche ou filtres actifs */}
+              {(selectedStacks.length > 0 || searchQuery) && (
+                <button
+                  type="button"
+                  onClick={handleClearAllFilters}
+                  className="text-xs text-muted hover:text-foreground shrink-0 underline decoration-muted/50 underline-offset-2 ml-1"
+                >
+                  Tout réinitialiser
+                </button>
               )}
             </div>
 
-            {filteredFiches.length === 0 ? (
-              <div className="bg-card border border-border rounded-lg p-12 text-center shadow-sm space-y-2">
-                <p className="text-sm font-medium text-foreground">Aucune fiche ne correspond à tes critères.</p>
-                <p className="text-xs text-muted">Essaie d'élargir ta recherche ou de réinitialiser les filtres.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredFiches.map((fiche) => {
-                  const isSaved = savedIds.includes(fiche.id)
-                  const dateFormatted = new Date(fiche.created_at).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })
-
-                  return (
-                    <div
-                      key={fiche.id}
-                      className="bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 rounded-lg p-5 flex flex-col justify-between space-y-4 transition-all shadow-sm group relative"
-                    >
-                      <div className="space-y-2.5">
-                        {/* En-tête de carte : Auteur + Date + Signet Bookmark */}
-                        <div className="flex items-center justify-between gap-2 text-xs text-muted">
-                          <span className="truncate">Par {fiche.author_name || 'Senior'} • {dateFormatted}</span>
-                          <button
-                            type="button"
-                            onClick={(e) => handleToggleFavorite(e, fiche.id)}
-                            title={isSaved ? 'Retirer des favoris' : 'Sauvegarder la fiche'}
-                            className={`p-1.5 rounded-md transition-colors ${
-                              isSaved
-                                ? 'text-accent bg-accent-light'
-                                : 'text-muted hover:text-foreground hover:bg-background'
-                            }`}
-                          >
-                            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
-                          </button>
-                        </div>
-
-                        {/* Titre (limité à 2 lignes) */}
-                        <Link href={`/fiche/${fiche.id}`} className="block">
-                          <h2 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2 leading-snug">
-                            {fiche.title}
-                          </h2>
-                        </Link>
-
-                        {/* Badges Stack & Tags */}
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {fiche.tags &&
-                            fiche.tags.slice(0, 3).map((tag, idx) => (
-                              <span
-                                key={idx}
-                                className="bg-accent-light text-accent text-[11px] px-2 py-0.5 rounded-full font-medium"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          {fiche.stack &&
-                            fiche.stack.slice(0, 2).map((item, idx) => (
-                              <span
-                                key={`stack-${idx}`}
-                                className="bg-accent-light text-accent text-[11px] px-2 py-0.5 rounded-full font-medium"
-                              >
-                                {item}
-                              </span>
-                            ))}
-                        </div>
-                      </div>
-
-                      {/* Footer de carte compact : Vues et Votes Utiles */}
-                      <div className="flex items-center justify-between pt-3 border-t border-border text-xs text-muted">
-                        <span className="inline-flex items-center gap-1">
-                          <ThumbsUp className="w-3.5 h-3.5 text-accent" />
-                          <span>{fiche.useful_count || 0} utile</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Eye className="w-3.5 h-3.5 text-muted" />
-                          <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </section>
+            {/* Compteur de résultats */}
+            <div className="shrink-0 text-xs font-semibold text-muted hidden sm:block">
+              {filteredFiches.length} fiche{filteredFiches.length > 1 ? 's' : ''}
+            </div>
+          </div>
         </div>
+
+        {/* Grille des fiches */}
+        <section className="w-full space-y-6 pt-2">
+          {filteredFiches.length === 0 ? (
+            <div className="bg-card border border-border rounded-lg p-12 text-center shadow-sm space-y-2">
+              <p className="text-sm font-medium text-foreground">Aucune fiche ne correspond à tes critères.</p>
+              <p className="text-xs text-muted">Essaie d'élargir ta recherche ou d'effacer les filtres.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {visibleFiches.map((fiche) => (
+                  <FicheCard
+                    key={fiche.id}
+                    fiche={fiche}
+                    isSaved={savedIds.includes(fiche.id)}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                ))}
+              </div>
+
+              {/* Bouton Charger plus */}
+              {filteredFiches.length > visibleCount && (
+                <div className="text-center pt-4 pb-4">
+                  <button
+                    type="button"
+                    onClick={() => setVisibleCount((prev) => prev + 12)}
+                    className="inline-flex items-center gap-2 bg-card hover:bg-background border border-border text-foreground px-5 py-2.5 rounded-md text-xs font-semibold shadow-xs transition-all hover:border-gray-400 dark:hover:border-gray-600"
+                  >
+                    <span>Charger plus de fiches ({filteredFiches.length - visibleCount} restantes)</span>
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
       </main>
     </div>
   )

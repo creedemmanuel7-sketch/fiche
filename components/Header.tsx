@@ -18,7 +18,7 @@ export default function Header({ user }: HeaderProps) {
         </Link>
         <nav className="flex items-center gap-4 sm:gap-6">
           <Link
-            href="/"
+            href="/explorer"
             className="text-sm font-medium text-muted hover:text-foreground transition-colors"
           >
             Explorer

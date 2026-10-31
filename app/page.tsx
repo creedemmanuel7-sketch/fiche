@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import HomeSearch, { type PublicFiche } from './home-search'
+import HomeLanding from './home-landing'
+import { type PublicFiche } from '@/components/FicheCard'
 
 async function HomeContent() {
   const supabase = await createClient()
@@ -25,7 +26,7 @@ async function HomeContent() {
         userProfile = profile
       }
     } catch {
-      // Pas de bloquant si les colonnes ne sont pas encore migrées
+      // Pas de blocage si les colonnes ne sont pas encore migrées
     }
 
     try {
@@ -42,33 +43,47 @@ async function HomeContent() {
     }
   }
 
-  // 2. Récupérer les fiches publiques (avec repli gracieux si is_hidden n'existe pas encore)
+  // 2. Récupérer les fiches publiques (limitées à 6 pour l'accueil, avec optionnel fetch de recommandées)
   let fichesData: PublicFiche[] = []
+  let allFichesForRec: PublicFiche[] = []
 
   const { data: withHidden, error: hiddenError } = await supabase
     .from('fiches')
     .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, is_hidden')
     .order('created_at', { ascending: false })
-    .limit(100)
+    .limit(30)
 
   if (!hiddenError && withHidden) {
-    fichesData = withHidden.filter((f) => !(f as { is_hidden?: boolean }).is_hidden) as PublicFiche[]
+    allFichesForRec = withHidden.filter((f) => !(f as { is_hidden?: boolean }).is_hidden) as PublicFiche[]
   } else {
-    const { data: fallbackData, error: fbError } = await supabase
+    const { data: fallbackData } = await supabase
       .from('fiches')
       .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
       .order('created_at', { ascending: false })
-      .limit(100)
+      .limit(30)
 
-    if (fbError) {
-      console.error('Erreur chargement fiches:', fbError)
-    }
-    fichesData = (fallbackData as PublicFiche[]) || []
+    allFichesForRec = (fallbackData as PublicFiche[]) || []
+  }
+
+  fichesData = allFichesForRec.slice(0, 6)
+
+  // Calculer fiches recommandées pour l'accueil si stacks préférées
+  let recommendedFiches: PublicFiche[] = []
+  if (userProfile?.preferred_stacks && userProfile.preferred_stacks.length > 0) {
+    const lowerPrefs = userProfile.preferred_stacks.map((p) => p.toLowerCase())
+    recommendedFiches = allFichesForRec
+      .filter((fiche) => {
+        return (
+          fiche.stack?.some((s) => lowerPrefs.includes(s.toLowerCase())) ||
+          fiche.tags?.some((t) => lowerPrefs.includes(t.toLowerCase()))
+        )
+      })
+      .slice(0, 3)
   }
 
   return (
-    <HomeSearch
-      initialFiches={fichesData}
+    <HomeLanding
+      fiches={fichesData}
       user={
         user
           ? {
@@ -79,6 +94,7 @@ async function HomeContent() {
           : null
       }
       initialSavedIds={initialSavedIds}
+      recommendedFiches={recommendedFiches}
     />
   )
 }
