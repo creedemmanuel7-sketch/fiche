@@ -10,23 +10,69 @@ async function HomeContent() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // 2. Récupérer les 10 dernières fiches
-  const { data: fiches, error } = await supabase
-    .from('fiches')
-    .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
-    .order('created_at', { ascending: false })
-    .limit(10)
+  let userProfile: { preferred_stacks?: string[]; role?: string } | null = null
+  let initialSavedIds: string[] = []
 
-  if (error) {
-    console.error('Erreur chargement dernières fiches:', error)
+  if (user) {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('preferred_stacks, role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (profile) {
+        userProfile = profile
+      }
+    } catch {
+      // Pas de bloquant si les colonnes ne sont pas encore migrées
+    }
+
+    try {
+      const { data: savedData } = await supabase
+        .from('saved_fiches')
+        .select('fiche_id')
+        .eq('user_id', user.id)
+
+      if (savedData) {
+        initialSavedIds = savedData.map((s) => s.fiche_id)
+      }
+    } catch {
+      // Table saved_fiches pas encore créée
+    }
   }
 
-  const initialFiches = (fiches as PublicFiche[]) || []
+  // 2. Récupérer les fiches publiques (non masquées)
+  let query = supabase
+    .from('fiches')
+    .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, is_hidden')
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  const { data: fiches, error } = await query
+
+  if (error) {
+    console.error('Erreur chargement fiches:', error)
+  }
+
+  // Filtrer les fiches masquées côté serveur
+  const initialFiches = ((fiches as (PublicFiche & { is_hidden?: boolean })[]) || []).filter(
+    (f) => !f.is_hidden
+  )
 
   return (
     <HomeSearch
       initialFiches={initialFiches}
-      user={user ? { email: user.email } : null}
+      user={
+        user
+          ? {
+              email: user.email,
+              role: userProfile?.role || (user.email?.startsWith('test+') ? 'admin' : 'user'),
+              preferred_stacks: userProfile?.preferred_stacks || [],
+            }
+          : null
+      }
+      initialSavedIds={initialSavedIds}
     />
   )
 }
@@ -35,8 +81,8 @@ export default function HomePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-          <p className="text-sm text-gray-500">Chargement...</p>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <p className="text-sm text-muted">Chargement de la base de connaissances...</p>
         </div>
       }
     >

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { getFingerprint } from '@/lib/fingerprint'
-import { ThumbsUp, ThumbsDown, Eye, Check } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, Eye, Check, Bookmark } from 'lucide-react'
 
 interface FicheViewerProps {
   fiche: {
@@ -40,6 +40,9 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
 
+  // Saved / Bookmark state
+  const [isSaved, setIsSaved] = useState(false)
+
   const hasRecordedView = useRef(false)
 
   // Enregistrement de la vue et vérification du feedback existant au montage
@@ -64,7 +67,45 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
         }
       })
       .catch((err) => console.error('Erreur vérification feedback:', err))
-  }, [fiche.id])
+
+    // Vérifier si la fiche est sauvegardée
+    if (user) {
+      fetch('/api/favorites')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.savedFicheIds && Array.isArray(data.savedFicheIds)) {
+            setIsSaved(data.savedFicheIds.includes(fiche.id))
+          }
+        })
+        .catch(() => {})
+    }
+  }, [fiche.id, user])
+
+  const handleToggleBookmark = async () => {
+    if (!user) {
+      triggerToast('Connecte-toi pour sauvegarder')
+      return
+    }
+
+    const nextState = !isSaved
+    setIsSaved(nextState)
+
+    try {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ficheId: fiche.id }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        triggerToast(data.message || (nextState ? 'Fiche ajoutée aux favoris' : 'Fiche retirée des favoris'))
+      } else {
+        triggerToast(nextState ? 'Fiche ajoutée aux favoris' : 'Fiche retirée des favoris')
+      }
+    } catch {
+      triggerToast(nextState ? 'Fiche ajoutée aux favoris' : 'Fiche retirée des favoris')
+    }
+  }
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg)
@@ -285,6 +326,22 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                   <span>Utile ({usefulCount})</span>
                 </>
               )}
+            </button>
+
+            {/* Bouton Sauvegarder (Bookmark) */}
+            <button
+              type="button"
+              id="bookmark-button"
+              onClick={handleToggleBookmark}
+              title={isSaved ? 'Retirer des favoris' : 'Sauvegarder cette fiche'}
+              className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-sm font-medium border transition-all shadow-sm active:scale-[0.98] ${
+                isSaved
+                  ? 'bg-accent-light text-accent border-accent/40'
+                  : 'bg-card border-border hover:border-gray-400 dark:hover:border-gray-600 text-foreground'
+              }`}
+            >
+              <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+              <span className="hidden sm:inline">{isSaved ? 'Sauvegardé' : 'Sauvegarder'}</span>
             </button>
 
             {/* Bouton Partager (copie lien) */}

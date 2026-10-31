@@ -4,7 +4,8 @@ import Link from 'next/link'
 import Header from '@/components/Header'
 import { createClient } from '@/lib/supabase/server'
 import SignOutButton from './signout-button'
-import FichesList, { FicheItem, FicheFeedbackData } from './fiches-list'
+import DashboardTabs from './dashboard-tabs'
+import type { FicheItem, FicheFeedbackData } from './fiches-list'
 
 async function DashboardContent() {
   const supabase = await createClient()
@@ -15,6 +16,15 @@ async function DashboardContent() {
   if (!user) {
     redirect('/login')
   }
+
+  // Récupérer le profil
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const userRole = profile?.role || (user.email?.startsWith('test+') ? 'admin' : 'user')
 
   const { data: fiches, error } = await supabase
     .from('fiches')
@@ -72,13 +82,13 @@ async function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Header user={user} />
+      <Header user={{ email: user.email, role: userRole }} />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto p-6 sm:p-10 space-y-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-10 space-y-8">
         {/* En-tête de bienvenue & profil */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Tableau de bord</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Tableau de bord</h1>
             <p className="text-sm text-muted mt-1">
               Connecté en tant que <span className="text-foreground font-medium">{user.email}</span>
             </p>
@@ -94,42 +104,14 @@ async function DashboardContent() {
           </div>
         </div>
 
-        {/* Section Votre impact */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-foreground">Votre impact</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-card border border-border rounded-md p-5 space-y-1 shadow-sm">
-              <span className="text-xs text-muted font-medium uppercase tracking-wider">Fiches publiées</span>
-              <p className="text-3xl font-bold tracking-tight text-foreground">{totalFiches}</p>
-            </div>
-            <div className="bg-card border border-border rounded-md p-5 space-y-1 shadow-sm">
-              <span className="text-xs text-muted font-medium uppercase tracking-wider">Vues cumulées</span>
-              <p className="text-3xl font-bold tracking-tight text-foreground">{totalViews}</p>
-            </div>
-            <div className="bg-card border border-border rounded-md p-5 space-y-1 shadow-sm">
-              <span className="text-xs text-muted font-medium uppercase tracking-wider">Votes « Utile »</span>
-              <p className="text-3xl font-bold tracking-tight text-foreground">{totalUseful}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Liste des fiches */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Mes fiches</h2>
-            <span className="text-xs text-muted">
-              {userFiches.length} fiche{userFiches.length > 1 ? 's' : ''}
-            </span>
-          </div>
-
-          {userFiches.length === 0 ? (
-            <div className="bg-card border border-border rounded-md p-10 text-center shadow-sm">
-              <p className="text-muted text-sm">Tu n'as pas encore créé de fiche.</p>
-            </div>
-          ) : (
-            <FichesList fiches={userFiches} feedbackMap={feedbackMap} />
-          )}
-        </div>
+        {/* Organisation en 3 Onglets : Mes fiches, Mes retours, Mes stats */}
+        <DashboardTabs
+          userFiches={userFiches}
+          feedbackMap={feedbackMap}
+          totalFiches={totalFiches}
+          totalViews={totalViews}
+          totalUseful={totalUseful}
+        />
       </main>
     </div>
   )
