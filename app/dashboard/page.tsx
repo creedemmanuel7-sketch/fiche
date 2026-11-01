@@ -81,6 +81,18 @@ async function DashboardContent() {
   const totalViews = userFiches.reduce((acc, f) => acc + (f.view_count || 0), 0)
   const totalUseful = userFiches.reduce((acc, f) => acc + (f.useful_count || 0), 0)
 
+  // Nombre de fiches sauvegardées en favoris
+  let savedCount = 0
+  try {
+    const { count } = await supabase
+      .from('saved_fiches')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+    savedCount = count || 0
+  } catch (e) {
+    console.error('Erreur chargement favoris count:', e)
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header user={{ email: user.email, role: userRole }} />
@@ -110,6 +122,7 @@ async function DashboardContent() {
           totalFiches={totalFiches}
           totalViews={totalViews}
           totalUseful={totalUseful}
+          savedCount={savedCount}
         />
       </main>
     </div>

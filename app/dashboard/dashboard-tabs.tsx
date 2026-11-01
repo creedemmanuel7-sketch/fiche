@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, ThumbsDown, Eye, MessageSquare, BarChart3, FileText, X } from 'lucide-react'
+import BadgesGrid from '@/components/BadgesGrid'
 import type { FicheItem, FicheFeedbackData } from './fiches-list'
 
 interface DashboardTabsProps {
@@ -11,6 +12,7 @@ interface DashboardTabsProps {
   totalFiches: number
   totalViews: number
   totalUseful: number
+  savedCount?: number
 }
 
 type TabType = 'fiches' | 'retours' | 'stats'
@@ -21,6 +23,7 @@ export default function DashboardTabs({
   totalFiches,
   totalViews,
   totalUseful,
+  savedCount = 0,
 }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('fiches')
   const [selectedFicheModal, setSelectedFicheModal] = useState<{
@@ -265,6 +268,18 @@ export default function DashboardTabs({
               Avec <strong className="text-foreground">{totalViews} vues</strong> et <strong className="text-foreground">{totalUseful} votes utiles</strong>, votre contribution est activement capitalisée.
             </p>
           </div>
+
+          {/* Grille des Succès & Badges de contribution */}
+          <section className="bg-card border border-border rounded-lg p-6 shadow-sm">
+            <BadgesGrid
+              stats={{
+                totalFiches,
+                totalUseful,
+                totalViews,
+                savedCount,
+              }}
+            />
+          </section>
         </section>
       )}
 
