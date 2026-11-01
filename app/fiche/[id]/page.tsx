@@ -4,6 +4,9 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import FicheViewer from './fiche-viewer'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface PageProps {
   params: Promise<{ id: string }>
 }
@@ -24,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  let authorName = 'Senior'
+  let authorName = 'Équipe Fiche'
   if (fiche.author_id) {
     const { data: profile } = await supabase
       .from('profiles')

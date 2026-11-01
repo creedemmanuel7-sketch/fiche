@@ -89,7 +89,7 @@ export default function FavorisList({ initialFiches }: FavorisListProps) {
                 >
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between gap-2 text-xs text-muted">
-                      <span className="truncate">Par {fiche.author_name || 'Senior'} • {dateFormatted}</span>
+                      <span className="truncate">Par {fiche.author_name || 'Équipe Fiche'} • {dateFormatted}</span>
                       <button
                         type="button"
                         onClick={(e) => handleRemoveFavorite(e, fiche.id)}

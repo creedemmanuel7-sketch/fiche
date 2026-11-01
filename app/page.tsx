@@ -5,6 +5,9 @@ import { createClient } from '@/lib/supabase/server'
 import HomeLanding from './home-landing'
 import { type PublicFiche } from '@/components/FicheCard'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 async function HomeContent() {
   const supabase = await createClient()
 

@@ -4,6 +4,9 @@ import { SkeletonGrid } from '@/components/SkeletonCard'
 import { createClient } from '@/lib/supabase/server'
 import HomeSearch, { type PublicFiche } from '@/app/home-search'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 async function ExplorerContent() {
   const supabase = await createClient()
 
