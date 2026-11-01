@@ -8,6 +8,7 @@ export interface PublicFiche {
   title: string
   problem?: string
   solution?: string
+  category?: string
   tags: string[]
   stack: string[]
   author_id: string
@@ -17,6 +18,87 @@ export interface PublicFiche {
   created_at: string
 }
 
+export function resolveCategory(fiche: {
+  category?: string
+  title?: string
+  tags?: string[]
+  stack?: string[]
+  original_question?: string | null
+}): string {
+  if (
+    fiche.category &&
+    ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'].includes(fiche.category)
+  ) {
+    return fiche.category
+  }
+  const fullText = [
+    fiche.title || '',
+    ...(fiche.tags || []),
+    ...(fiche.stack || []),
+    fiche.original_question || '',
+  ]
+    .join(' ')
+    .toLowerCase()
+
+  if (
+    fullText.includes('mobile money') ||
+    fullText.includes('cinetpay') ||
+    fullText.includes('togo') ||
+    fullText.includes('lomé') ||
+    fullText.includes('lome')
+  ) {
+    if (fullText.includes('salaire') || fullText.includes('junior')) {
+      return 'Carrière'
+    }
+    return 'Contexte Local'
+  }
+  if (
+    fullText.includes('salaire') ||
+    fullText.includes('negociation') ||
+    fullText.includes('recrutement') ||
+    fullText.includes('github') ||
+    fullText.includes('carriere')
+  ) {
+    return 'Carrière'
+  }
+  if (
+    fullText.includes('périmètre') ||
+    fullText.includes('perimetre') ||
+    fullText.includes('gestion de projet') ||
+    fullText.includes('trello') ||
+    fullText.includes('contrat') ||
+    fullText.includes('agile')
+  ) {
+    return 'Méthodo'
+  }
+  if (
+    fullText.includes('management') ||
+    fullText.includes('équipe') ||
+    fullText.includes('equipe') ||
+    fullText.includes('mentorat') ||
+    fullText.includes('soft skills')
+  ) {
+    return 'Soft Skills'
+  }
+  return 'Code'
+}
+
+export function getCategoryBadgeClass(category?: string) {
+  switch (category) {
+    case 'Carrière':
+      return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30'
+    case 'Contexte Local':
+      return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+    case 'Méthodo':
+      return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30'
+    case 'Soft Skills':
+      return 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30'
+    case 'Code':
+    default:
+      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+  }
+}
+
 interface FicheCardProps {
   fiche: PublicFiche
   isSaved: boolean
@@ -24,6 +106,7 @@ interface FicheCardProps {
 }
 
 export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCardProps) {
+  const category = resolveCategory(fiche)
   const dateFormatted = new Date(fiche.created_at).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',
@@ -33,14 +116,23 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
   return (
     <div className="bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 rounded-lg p-5 flex flex-col justify-between space-y-4 transition-all shadow-sm group relative">
       <div className="space-y-2.5">
-        {/* En-tête de carte : Auteur + Date + Signet Bookmark */}
+        {/* En-tête de carte : Catégorie + Auteur + Date + Signet Bookmark */}
         <div className="flex items-center justify-between gap-2 text-xs text-muted">
-          <span className="truncate">Par {fiche.author_name || 'Senior'} • {dateFormatted}</span>
+          <div className="flex items-center gap-2 min-w-0 truncate">
+            <span
+              className={`inline-flex items-center text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${getCategoryBadgeClass(
+                category
+              )}`}
+            >
+              {category}
+            </span>
+            <span className="truncate">Par {fiche.author_name || 'Senior'} • {dateFormatted}</span>
+          </div>
           <button
             type="button"
             onClick={(e) => onToggleFavorite(e, fiche.id)}
             title={isSaved ? 'Retirer des favoris' : 'Sauvegarder la fiche'}
-            className={`p-1.5 rounded-md transition-colors ${
+            className={`p-1.5 rounded-md transition-colors shrink-0 ${
               isSaved
                 ? 'text-accent bg-accent-light'
                 : 'text-muted hover:text-foreground hover:bg-background'

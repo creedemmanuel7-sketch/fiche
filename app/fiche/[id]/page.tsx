@@ -80,16 +80,30 @@ async function FicheContent({ params }: PageProps) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { data: fiche, error } = await supabase
+  let fiche = null
+  const { data: withCat, error: catError } = await supabase
     .from('fiches')
     .select(
-      'id, title, problem, solution, original_question, tags, stack, view_count, useful_count, created_at, author_id'
+      'id, title, problem, solution, original_question, tags, stack, view_count, useful_count, created_at, author_id, category'
     )
     .eq('id', id)
     .maybeSingle()
 
-  if (error || !fiche) {
-    notFound()
+  if (!catError && withCat) {
+    fiche = withCat
+  } else {
+    const { data: fallbackFiche, error: fallbackError } = await supabase
+      .from('fiches')
+      .select(
+        'id, title, problem, solution, original_question, tags, stack, view_count, useful_count, created_at, author_id'
+      )
+      .eq('id', id)
+      .maybeSingle()
+
+    if (fallbackError || !fallbackFiche) {
+      notFound()
+    }
+    fiche = fallbackFiche
   }
 
   // Récupérer le nom de l'auteur

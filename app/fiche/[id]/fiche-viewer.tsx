@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { getFingerprint } from '@/lib/fingerprint'
+import { getCategoryBadgeClass, resolveCategory } from '@/components/FicheCard'
 import { ThumbsUp, ThumbsDown, Eye, Check, Bookmark } from 'lucide-react'
 
 interface FicheViewerProps {
@@ -12,6 +13,7 @@ interface FicheViewerProps {
     title: string
     problem: string
     solution: string
+    category?: string
     original_question?: string | null
     tags: string[]
     stack: string[]
@@ -227,9 +229,18 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
 
         {/* Titre et badges */}
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground leading-tight">
-            {fiche.title}
-          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground leading-tight">
+              {fiche.title}
+            </h1>
+            <span
+              className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border shrink-0 ${getCategoryBadgeClass(
+                resolveCategory(fiche)
+              )}`}
+            >
+              {resolveCategory(fiche)}
+            </span>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {fiche.tags &&

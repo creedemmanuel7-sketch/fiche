@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
-import FicheCard, { type PublicFiche } from '@/components/FicheCard'
+import FicheCard, { type PublicFiche, resolveCategory } from '@/components/FicheCard'
 import {
   Sparkles,
   ArrowUpDown,
@@ -43,6 +43,7 @@ export default function HomeSearch({
   const [isRolling, setIsRolling] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStacks, setSelectedStacks] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [sortBy, setSortBy] = useState<SortOption>('recent')
   const [savedIds, setSavedIds] = useState<string[]>(initialSavedIds)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -158,12 +159,13 @@ export default function HomeSearch({
 
   const handleClearAllFilters = () => {
     setSelectedStacks([])
+    setSelectedCategory('')
     setSearchQuery('')
     setSortBy('recent')
     setVisibleCount(12)
   }
 
-  // Filtrage combiné (Recherche textuelle + Stacks) & Tri
+  // Filtrage combiné (Recherche textuelle + Stacks + Catégorie) & Tri
   const filteredFiches = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
 
@@ -175,7 +177,8 @@ export default function HomeSearch({
           fiche.title.toLowerCase().includes(query) ||
           fiche.problem?.toLowerCase().includes(query) ||
           fiche.tags?.some((t) => t.toLowerCase().includes(query)) ||
-          fiche.stack?.some((s) => s.toLowerCase().includes(query))
+          fiche.stack?.some((s) => s.toLowerCase().includes(query)) ||
+          fiche.category?.toLowerCase().includes(query)
 
         // Filtre de stacks multiples
         const matchesStack =
@@ -186,7 +189,13 @@ export default function HomeSearch({
               fiche.tags?.some((t) => t.toLowerCase() === sel.toLowerCase())
           )
 
-        return matchesQuery && matchesStack
+        // Filtre de catégorie
+        const ficheCat = resolveCategory(fiche)
+        const matchesCategory =
+          !selectedCategory ||
+          ficheCat.toLowerCase() === selectedCategory.toLowerCase()
+
+        return matchesQuery && matchesStack && matchesCategory
       })
       .sort((a, b) => {
         if (sortBy === 'recent') {
@@ -200,7 +209,7 @@ export default function HomeSearch({
         }
         return 0
       })
-  }, [initialFiches, searchQuery, selectedStacks, sortBy])
+  }, [initialFiches, searchQuery, selectedStacks, selectedCategory, sortBy])
 
   // Fiches visibles selon pagination
   const visibleFiches = useMemo(() => {
@@ -328,6 +337,31 @@ export default function HomeSearch({
                 </select>
               </div>
 
+              {/* Menu déroulant Filtrer par catégorie */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value)
+                    setVisibleCount(12)
+                  }}
+                  className={`border text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent font-medium shadow-xs cursor-pointer transition-colors ${
+                    selectedCategory
+                      ? 'bg-accent-light text-accent border-accent/40 font-semibold'
+                      : 'bg-card border-border text-foreground'
+                  }`}
+                  aria-label="Filtrer par catégorie"
+                  title="Filtrer par catégorie"
+                >
+                  <option value="">Toutes catégories</option>
+                  <option value="Code">Code</option>
+                  <option value="Carrière">Carrière</option>
+                  <option value="Méthodo">Méthodo</option>
+                  <option value="Contexte Local">Contexte Local</option>
+                  <option value="Soft Skills">Soft Skills</option>
+                </select>
+              </div>
+
               {/* Bouton Filtrer par stack avec Dropdown & Recherche interne */}
               <div className="relative shrink-0" ref={dropdownRef}>
                 <button
@@ -421,6 +455,24 @@ export default function HomeSearch({
                 <span className="hidden sm:inline">Surprends-moi</span>
               </button>
 
+              {/* Badge de catégorie sélectionnée */}
+              {selectedCategory && (
+                <span className="inline-flex items-center gap-1.5 bg-accent-light text-accent text-xs font-medium px-2.5 py-1 rounded-full shrink-0 shadow-2xs animate-in fade-in">
+                  <span>Catégorie: {selectedCategory}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory('')
+                      setVisibleCount(12)
+                    }}
+                    className="hover:opacity-75 focus:outline-none cursor-pointer"
+                    title={`Retirer le filtre ${selectedCategory}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+
               {/* Badges des stacks sélectionnées avec bouton "x" pour retirer */}
               {selectedStacks.map((stk) => (
                 <span
@@ -440,11 +492,11 @@ export default function HomeSearch({
               ))}
 
               {/* Bouton Réinitialiser si recherche ou filtres actifs */}
-              {(selectedStacks.length > 0 || searchQuery) && (
+              {(selectedStacks.length > 0 || searchQuery || selectedCategory) && (
                 <button
                   type="button"
                   onClick={handleClearAllFilters}
-                  className="text-xs text-muted hover:text-foreground shrink-0 underline decoration-muted/50 underline-offset-2 ml-1"
+                  className="text-xs text-muted hover:text-foreground shrink-0 underline decoration-muted/50 underline-offset-2 ml-1 cursor-pointer"
                 >
                   Tout réinitialiser
                 </button>

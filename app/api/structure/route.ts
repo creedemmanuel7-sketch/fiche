@@ -7,11 +7,16 @@ const STRUCTURE_SCHEMA = {
   properties: {
     title: { type: 'string', description: 'Titre court et clair de la fiche (max 80 caractères)' },
     problem: { type: 'string', description: 'Le problème reformulé de manière générale et compréhensible' },
-    solution: { type: 'string', description: 'La solution technique expliquée clairement, étape par étape si besoin' },
-    tags: { type: 'array', items: { type: 'string' }, description: '3 à 5 mots-clés en minuscules (ex: react, css, git)' },
-    stack: { type: 'array', items: { type: 'string' }, description: 'Les technologies concernées (ex: Next.js, Tailwind, Python)' }
+    solution: { type: 'string', description: 'La solution technique ou méthodologique expliquée clairement, étape par étape si besoin' },
+    category: {
+      type: 'string',
+      enum: ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'],
+      description: 'La catégorie de la fiche selon le type de savoir'
+    },
+    tags: { type: 'array', items: { type: 'string' }, description: '3 à 5 mots-clés en minuscules (ex: react, négociation, mobile-money)' },
+    stack: { type: 'array', items: { type: 'string' }, description: 'Les technologies ou domaines concernés (ex: Next.js, RH, Lomé)' }
   },
-  required: ['title', 'problem', 'solution', 'tags', 'stack']
+  required: ['title', 'problem', 'solution', 'category', 'tags', 'stack']
 }
 
 export async function POST(request: Request) {
@@ -36,8 +41,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const prompt = `Tu es un assistant qui transforme des échanges techniques bruts (questions/réponses issues de groupes WhatsApp) en fiches de connaissance structurées.
-Tu dois extraire l'essentiel de la question et de la réponse.
+    const prompt = `Tu es un assistant qui transforme des échanges bruts (WhatsApp, Slack, forums) en fiches de connaissance capitalisées. 
+Tu dois être capable de traiter aussi bien du code (React, Node) que du savoir professionnel (carrière, gestion de projet, conseils, retours d'expérience).
+Pour chaque fiche, tu dois déterminer une 'Catégorie' parmi les suivantes :
+- 'Code' : Problèmes techniques, syntaxe, bugs, architecture.
+- 'Carrière' : Négociation, entretiens, évolution, salaires.
+- 'Méthodo' : Gestion de projet, agile, organisation d'équipe.
+- 'Contexte Local' : Infos spécifiques à l'Afrique/Togo (Mobile Money, internet, entreprises locales).
+- 'Soft Skills' : Communication, management, posture pro.
+
 Réponds UNIQUEMENT en JSON valide selon le schéma fourni.
 
 Question brute :

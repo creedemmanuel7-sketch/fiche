@@ -45,26 +45,40 @@ async function ExplorerContent() {
   // 2. Récupérer TOUTES les fiches publiques
   let fichesData: PublicFiche[] = []
 
-  const { data: withHidden, error: hiddenError } = await supabase
+  let fetched: unknown = null
+  const { data: withCat, error: catErr } = await supabase
     .from('fiches')
-    .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, is_hidden')
+    .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, category, is_hidden')
     .order('created_at', { ascending: false })
     .limit(250)
 
-  if (!hiddenError && withHidden) {
-    fichesData = withHidden.filter((f) => !(f as { is_hidden?: boolean }).is_hidden) as PublicFiche[]
+  if (!catErr && withCat) {
+    fetched = withCat
   } else {
-    const { data: fallbackData, error: fbError } = await supabase
+    const { data: withHidden, error: hiddenError } = await supabase
       .from('fiches')
-      .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
+      .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, is_hidden')
       .order('created_at', { ascending: false })
       .limit(250)
 
-    if (fbError) {
-      console.error('Erreur chargement fiches explorer:', fbError)
+    if (!hiddenError && withHidden) {
+      fetched = withHidden
+    } else {
+      const { data: fallbackData, error: fbError } = await supabase
+        .from('fiches')
+        .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
+        .order('created_at', { ascending: false })
+        .limit(250)
+
+      if (fbError) {
+        console.error('Erreur chargement fiches explorer:', fbError)
+      }
+      fetched = fallbackData || []
     }
-    fichesData = (fallbackData as PublicFiche[]) || []
   }
+
+  const rawList = (fetched as (PublicFiche & { is_hidden?: boolean })[]) || []
+  fichesData = rawList.filter((f) => !f.is_hidden)
 
   return (
     <HomeSearch

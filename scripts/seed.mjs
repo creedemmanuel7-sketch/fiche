@@ -81,6 +81,26 @@ const RAW_ITEMS = [
   {
     rawQuestion: "Comment gérer automatiquement le rafraîchissement d'un token JWT expiré avec un refresh token ?",
     rawAnswer: "Utilise un intercepteur HTTP (ex: Axios Interceptors ou un wrapper Fetch). 1. À chaque requête, ajoute le header 'Authorization: Bearer <accessToken>'. 2. Si le serveur répond avec un statut HTTP 401 (token expiré), intercepte l'erreur. 3. Mets en pause les requêtes sortantes dans une file d'attente (queue). 4. Envoie une requête à '/api/auth/refresh' avec le refreshToken (idéalement stocké dans un cookie httpOnly sécurisé). 5. Reçois le nouvel accessToken, mets à jour ton client, et rejoue automatiquement toutes les requêtes qui étaient en attente. Si le refresh échoue, déconnecte l'utilisateur et redirige vers '/login'."
+  },
+  {
+    rawQuestion: "Comment négocier son salaire quand on est un développeur junior à Lomé ?",
+    rawAnswer: "Ne donne jamais le premier chiffre. Renseigne-toi sur les grilles locales. Mets en avant tes projets personnels (Fiche, GitHub) car les entreprises locales valorisent l'initiative. N'hésite pas à demander une période d'essai avec un salaire plus bas, puis une revalorisation après 3 mois."
+  },
+  {
+    rawQuestion: "Quelle est la meilleure façon de gérer un client au Togo qui change tout le temps d'avis sur un projet ?",
+    rawAnswer: "Facture les modifications. Bloque le périmètre (scope) dans un contrat simple. Utilise un outil de gestion de tâches (Trello) pour que le client voie l'impact de chaque ajout. Communique beaucoup à l'écrit."
+  },
+  {
+    rawQuestion: "Comment intégrer Mobile Money (CinetPay) sur une app Next.js sans péter les plombs ?",
+    rawAnswer: "Ne fais jamais confiance au frontend pour valider un paiement. Fais un webhook côté serveur qui vérifie la signature. Utilise des transactions de test. Prépare-toi à gérer les callbacks qui arrivent en retard."
+  },
+  {
+    rawQuestion: "Comment gérer une équipe de juniors quand on est le seul senior dans une startup tech locale ?",
+    rawAnswer: "Mets en place des revues de code systématiques (PR). Crée une doc interne (sur Fiche !). Apprends-leur à poser des questions après avoir cherché pendant 15 minutes. Délègue des petites tâches complètes, pas juste des bouts de code."
+  },
+  {
+    rawQuestion: "Est-ce que les entreprises locales regardent les profils GitHub ?",
+    rawAnswer: "De plus en plus. Un profil GitHub actif avec des projets comme Fiche (même petits) vaut plus qu'un CV avec 5 ans d'expérience non vérifiable. Les recruteurs techniques locaux vont regarder tes commits."
   }
 ]
 
@@ -90,10 +110,15 @@ const STRUCTURE_SCHEMA = {
     title: { type: 'string', description: 'Titre court et clair de la fiche (max 80 caractères)' },
     problem: { type: 'string', description: 'Le problème reformulé de manière générale et compréhensible' },
     solution: { type: 'string', description: 'La solution technique expliquée clairement, étape par étape si besoin' },
+    category: {
+      type: 'string',
+      enum: ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'],
+      description: 'La catégorie de la fiche selon le type de savoir'
+    },
     tags: { type: 'array', items: { type: 'string' }, description: '3 à 5 mots-clés en minuscules (ex: react, css, git)' },
     stack: { type: 'array', items: { type: 'string' }, description: 'Les technologies concernées (ex: Next.js, Tailwind, Python)' }
   },
-  required: ['title', 'problem', 'solution', 'tags', 'stack']
+  required: ['title', 'problem', 'solution', 'category', 'tags', 'stack']
 }
 
 async function main() {
@@ -153,10 +178,30 @@ async function main() {
 
   for (let i = 0; i < RAW_ITEMS.length; i++) {
     const item = RAW_ITEMS[i]
+
+    // Vérifier si la fiche a déjà été insérée
+    const { data: existingFiche } = await supabase
+      .from('fiches')
+      .select('id, title')
+      .eq('original_question', item.rawQuestion)
+      .maybeSingle()
+
+    if (existingFiche) {
+      console.log(`[${i + 1}/${RAW_ITEMS.length}] Déjà présente en base : "${existingFiche.title}"`)
+      continue
+    }
+
     console.log(`[${i + 1}/${RAW_ITEMS.length}] Transformation par Gemini : "${item.rawQuestion.slice(0, 45)}..."`)
 
-    const prompt = `Tu es un assistant qui transforme des échanges techniques bruts (questions/réponses issues de groupes WhatsApp) en fiches de connaissance structurées.
-Tu dois extraire l'essentiel de la question et de la réponse.
+    const prompt = `Tu es un assistant qui transforme des échanges bruts (WhatsApp, Slack, forums) en fiches de connaissance capitalisées. 
+Tu dois être capable de traiter aussi bien du code (React, Node) que du savoir professionnel (carrière, gestion de projet, conseils, retours d'expérience).
+Pour chaque fiche, tu dois déterminer une 'Catégorie' parmi les suivantes :
+- 'Code' : Problèmes techniques, syntaxe, bugs, architecture.
+- 'Carrière' : Négociation, entretiens, évolution, salaires.
+- 'Méthodo' : Gestion de projet, agile, organisation d'équipe.
+- 'Contexte Local' : Infos spécifiques à l'Afrique/Togo (Mobile Money, internet, entreprises locales).
+- 'Soft Skills' : Communication, management, posture pro.
+
 Réponds UNIQUEMENT en JSON valide selon le schéma fourni.
 
 Question brute :
@@ -192,8 +237,9 @@ ${item.rawAnswer}`
         title: item.rawQuestion.slice(0, 75),
         problem: item.rawQuestion,
         solution: item.rawAnswer,
-        tags: ['technique', 'web', 'dev'],
-        stack: ['Next.js', 'JavaScript']
+        category: 'Contexte Local',
+        tags: ['technique', 'senior', 'conseil'],
+        stack: ['Expérience', 'Management']
       })
     }
 
@@ -201,22 +247,31 @@ ${item.rawAnswer}`
     generatedTitles.push(structured.title)
 
     // Insérer dans Supabase
-    const { error: insertError } = await supabase.from('fiches').insert({
+    const insertPayload = {
       title: structured.title,
       problem: structured.problem,
       solution: structured.solution,
+      category: structured.category || 'Code',
       original_question: item.rawQuestion,
       tags: structured.tags || [],
       stack: structured.stack || [],
       author_id: authorId,
       view_count: Math.floor(Math.random() * 25) + 3,
       useful_count: Math.floor(Math.random() * 12) + 1,
-    })
+    }
+
+    let { error: insertError } = await supabase.from('fiches').insert(insertPayload)
+
+    if (insertError && (insertError.message?.includes('category') || insertError.code === '42703')) {
+      delete insertPayload.category
+      const retry = await supabase.from('fiches').insert(insertPayload)
+      insertError = retry.error
+    }
 
     if (insertError) {
       console.error(`Erreur insertion fiche ${i + 1}:`, insertError.message)
     } else {
-      console.log(`✓ Insérée avec succès : "${structured.title}"`)
+      console.log(`✓ Insérée avec succès [${structured.category || 'Code'}] : "${structured.title}"`)
     }
 
     // Petite pause pour respecter le rate limiting de l'API Gemini

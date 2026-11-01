@@ -5,10 +5,14 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
+export const CATEGORIES = ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'] as const
+export type Category = (typeof CATEGORIES)[number]
+
 interface StructuredData {
   title: string
   problem: string
   solution: string
+  category?: Category
   tags: string[]
   stack: string[]
 }
@@ -29,6 +33,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
   // Generated / editable fields
   const [hasGenerated, setHasGenerated] = useState(false)
   const [title, setTitle] = useState('')
+  const [category, setCategory] = useState<Category>('Code')
   const [problem, setProblem] = useState('')
   const [solution, setSolution] = useState('')
   const [tagsStr, setTagsStr] = useState('')
@@ -59,6 +64,11 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
 
       const structured = data as StructuredData
       setTitle(structured.title || '')
+      if (structured.category && CATEGORIES.includes(structured.category)) {
+        setCategory(structured.category)
+      } else {
+        setCategory('Code')
+      }
       setProblem(structured.problem || '')
       setSolution(structured.solution || '')
       setTagsStr(Array.isArray(structured.tags) ? structured.tags.join(', ') : '')
@@ -93,7 +103,7 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
         .map((s) => s.trim())
         .filter(Boolean)
 
-      const { error: insertError } = await supabase.from('fiches').insert({
+      const insertPayload: Record<string, unknown> = {
         author_id: userId,
         title: title.trim(),
         problem: problem.trim(),
@@ -101,7 +111,16 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
         original_question: rawQuestion.trim(),
         tags,
         stack,
-      })
+        category,
+      }
+
+      let { error: insertError } = await supabase.from('fiches').insert(insertPayload)
+
+      if (insertError && (insertError.message?.includes('category') || insertError.code === '42703')) {
+        delete insertPayload.category
+        const retry = await supabase.from('fiches').insert(insertPayload)
+        insertError = retry.error
+      }
 
       if (insertError) {
         throw new Error(insertError.message)
@@ -205,17 +224,38 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             </p>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground">
-              Titre
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="block text-sm font-medium text-foreground">
+                Titre
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground flex items-center justify-between">
+                <span>Catégorie</span>
+                <span className="text-xs text-muted font-normal">Savoir ciblé</span>
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as Category)}
+                aria-label="Sélectionner la catégorie"
+                className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm font-medium"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="space-y-1.5">

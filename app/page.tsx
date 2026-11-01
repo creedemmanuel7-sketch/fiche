@@ -47,23 +47,37 @@ async function HomeContent() {
   let fichesData: PublicFiche[] = []
   let allFichesForRec: PublicFiche[] = []
 
-  const { data: withHidden, error: hiddenError } = await supabase
+  // Essai de lecture avec category et is_hidden
+  let fetched: unknown = null
+  const { data: withCat, error: catErr } = await supabase
     .from('fiches')
-    .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, is_hidden')
+    .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, category, is_hidden')
     .order('created_at', { ascending: false })
     .limit(30)
 
-  if (!hiddenError && withHidden) {
-    allFichesForRec = withHidden.filter((f) => !(f as { is_hidden?: boolean }).is_hidden) as PublicFiche[]
+  if (!catErr && withCat) {
+    fetched = withCat
   } else {
-    const { data: fallbackData } = await supabase
+    const { data: withHidden, error: hiddenError } = await supabase
       .from('fiches')
-      .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
+      .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at, is_hidden')
       .order('created_at', { ascending: false })
       .limit(30)
 
-    allFichesForRec = (fallbackData as PublicFiche[]) || []
+    if (!hiddenError && withHidden) {
+      fetched = withHidden
+    } else {
+      const { data: fallbackData } = await supabase
+        .from('fiches')
+        .select('id, title, problem, solution, tags, stack, author_id, view_count, useful_count, created_at')
+        .order('created_at', { ascending: false })
+        .limit(30)
+      fetched = fallbackData || []
+    }
   }
+
+  const rawList = (fetched as (PublicFiche & { is_hidden?: boolean })[]) || []
+  allFichesForRec = rawList.filter((f) => !f.is_hidden)
 
   fichesData = allFichesForRec.slice(0, 6)
 
