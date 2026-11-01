@@ -78,7 +78,31 @@ async function ExplorerContent() {
   }
 
   const rawList = (fetched as (PublicFiche & { is_hidden?: boolean })[]) || []
-  fichesData = rawList.filter((f) => !f.is_hidden)
+  const visibleFiches = rawList.filter((f) => !f.is_hidden)
+
+  // Récupérer les noms des auteurs depuis la table profiles
+  const authorIds = Array.from(new Set(visibleFiches.map((f) => f.author_id).filter(Boolean)))
+  let profileMap: Record<string, string> = {}
+  if (authorIds.length > 0) {
+    try {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, display_name, email')
+        .in('id', authorIds)
+      if (profs) {
+        profs.forEach((p) => {
+          profileMap[p.id] = p.display_name || (p.email ? p.email.split('@')[0] : 'Équipe Fiche')
+        })
+      }
+    } catch {
+      // Ignorer si échec
+    }
+  }
+
+  fichesData = visibleFiches.map((f) => ({
+    ...f,
+    author_name: profileMap[f.author_id] || 'Équipe Fiche',
+  }))
 
   return (
     <HomeSearch

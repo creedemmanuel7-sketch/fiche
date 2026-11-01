@@ -256,8 +256,8 @@ ${item.rawAnswer}`
       tags: structured.tags || [],
       stack: structured.stack || [],
       author_id: authorId,
-      view_count: Math.floor(Math.random() * 25) + 3,
-      useful_count: Math.floor(Math.random() * 12) + 1,
+      view_count: 0,
+      useful_count: 0,
     }
 
     let { error: insertError } = await supabase.from('fiches').insert(insertPayload)

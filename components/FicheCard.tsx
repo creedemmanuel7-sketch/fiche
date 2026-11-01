@@ -126,7 +126,7 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
             >
               {category}
             </span>
-            <span className="truncate">Par {fiche.author_name || 'Senior'} • {dateFormatted}</span>
+            <span className="truncate">Par {fiche.author_name || 'Équipe Fiche'} • {dateFormatted}</span>
           </div>
           <button
             type="button"

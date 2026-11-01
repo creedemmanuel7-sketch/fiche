@@ -107,7 +107,7 @@ async function FicheContent({ params }: PageProps) {
   }
 
   // Récupérer le nom de l'auteur
-  let authorName = 'Senior'
+  let authorName = 'Équipe Fiche'
   if (fiche.author_id) {
     const { data: profile } = await supabase
       .from('profiles')

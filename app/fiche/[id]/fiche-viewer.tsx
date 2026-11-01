@@ -221,7 +221,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
             ← Retour à l'accueil
           </Link>
           <div className="flex items-center gap-2 text-sm text-muted">
-            <span>Auteur : {fiche.author_name || 'Senior'}</span>
+            <span>Auteur : {fiche.author_name || 'Équipe Fiche'}</span>
             <span>•</span>
             <span>{dateFormatted}</span>
           </div>
