@@ -88,16 +88,16 @@ export function resolveCategory(fiche: {
 export function getCategoryBadgeClass(category?: string) {
   switch (category) {
     case 'Carrière':
-      return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30'
+      return 'bg-blue-500/10 text-blue-400 border-blue-500/30'
     case 'Contexte Local':
-      return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/30'
     case 'Méthodo':
-      return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30'
+      return 'bg-purple-500/10 text-purple-400 border-purple-500/30'
     case 'Soft Skills':
-      return 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30'
+      return 'bg-teal-500/10 text-teal-400 border-teal-500/30'
     case 'Code':
     default:
-      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
   }
 }
 
@@ -119,11 +119,11 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
     <motion.div
       whileHover={{ y: -2 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className="bg-card border border-border hover:border-accent/40 hover:shadow-md rounded-lg p-5 flex flex-col justify-between space-y-4 transition-all group relative cursor-pointer"
+      className="bg-surface-base border border-border-hairline hover:bg-surface-raised rounded-lg p-5 flex flex-col justify-between space-y-4 transition-all group relative cursor-pointer"
     >
       <div className="space-y-2.5">
         {/* En-tête de carte : Catégorie + Auteur + Date + Signet Bookmark */}
-        <div className="flex items-center justify-between gap-2 text-xs text-muted">
+        <div className="flex items-center justify-between gap-2 text-xs text-text-secondary">
           <div className="flex items-center gap-2 min-w-0 truncate">
             <span
               className={`inline-flex items-center text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${getCategoryBadgeClass(
@@ -141,7 +141,7 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
             className={`p-1.5 rounded-md transition-colors shrink-0 ${
               isSaved
                 ? 'text-accent bg-accent-light'
-                : 'text-muted hover:text-foreground hover:bg-background'
+                : 'text-text-muted hover:text-text-primary hover:bg-surface-raised'
             }`}
           >
             <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
@@ -150,7 +150,7 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
 
         {/* Titre (limité à 2 lignes) */}
         <Link href={`/fiche/${fiche.id}`} className="block">
-          <h2 className="text-base font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2 leading-snug">
+          <h2 className="text-base font-semibold text-text-primary group-hover:text-accent transition-colors line-clamp-2 leading-snug">
             {fiche.title}
           </h2>
         </Link>
@@ -161,7 +161,7 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
             fiche.tags.slice(0, 3).map((tag, idx) => (
               <span
                 key={idx}
-                className="bg-accent-light text-accent text-[11px] px-2 py-0.5 rounded-full font-medium"
+                className="bg-surface-raised border border-border-hairline text-text-secondary text-xs px-2 py-0.5 rounded-full font-medium"
               >
                 {tag}
               </span>
@@ -170,7 +170,7 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
             fiche.stack.slice(0, 2).map((item, idx) => (
               <span
                 key={`stack-${idx}`}
-                className="bg-accent-light text-accent text-[11px] px-2 py-0.5 rounded-full font-medium"
+                className="bg-surface-raised border border-border-hairline text-accent text-xs px-2 py-0.5 rounded-full font-medium"
               >
                 {item}
               </span>
@@ -179,13 +179,13 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
       </div>
 
       {/* Footer de carte compact : Vues et Votes Utiles */}
-      <div className="flex items-center justify-between pt-3 border-t border-border text-xs text-muted">
+      <div className="flex items-center justify-between pt-3 border-t border-border-hairline text-xs text-text-muted">
         <span className="inline-flex items-center gap-1">
           <ThumbsUp className="w-3.5 h-3.5 text-accent" />
           <span>{fiche.useful_count || 0} utile</span>
         </span>
         <span className="inline-flex items-center gap-1">
-          <Eye className="w-3.5 h-3.5 text-muted" />
+          <Eye className="w-3.5 h-3.5 text-text-muted" />
           <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
         </span>
       </div>

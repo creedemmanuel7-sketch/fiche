@@ -3,26 +3,61 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #1A1A1A;
-  --muted: #525252;
-  --border: #D4D4D4;
-  --accent: #0F6B4F;
-  --accent-light: #E6F0EC;
-  --card: #FAFAFA;
+  /* Luminance Stacking & Dark-First Design System Tokens */
+  --surface-canvas: #08090A;
+  --surface-base: #121316;
+  --surface-raised: #18191D;
+  --surface-overlay: #222328;
+  --border-hairline: rgba(255, 255, 255, 0.08);
+
+  --text-primary: #F0F1F2;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+
+  /* Accent (Linear-inspired emerald) */
+  --accent: #108966;
+  --accent-light: rgba(16, 137, 102, 0.15);
+
+  /* Semantic aliases */
+  --background: var(--surface-canvas);
+  --foreground: var(--text-primary);
+  --card: var(--surface-base);
+  --border: var(--border-hairline);
+  --muted: var(--text-muted);
 }
 
 .dark {
-  --background: #0A0A0A;
-  --foreground: #EDEDED;
-  --muted: #A3A3A3;
-  --border: #262626;
+  --surface-canvas: #08090A;
+  --surface-base: #121316;
+  --surface-raised: #18191D;
+  --surface-overlay: #222328;
+  --border-hairline: rgba(255, 255, 255, 0.08);
+
+  --text-primary: #F0F1F2;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+
   --accent: #108966;
-  --accent-light: #0A261D;
-  --card: #141414;
+  --accent-light: rgba(16, 137, 102, 0.15);
+
+  --background: var(--surface-canvas);
+  --foreground: var(--text-primary);
+  --card: var(--surface-base);
+  --border: var(--border-hairline);
+  --muted: var(--text-muted);
 }
 
 @theme inline {
+  --color-surface-canvas: var(--surface-canvas);
+  --color-surface-base: var(--surface-base);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-border-hairline: var(--border-hairline);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -30,11 +65,52 @@
   --color-accent: var(--accent);
   --color-accent-light: var(--accent-light);
   --color-card: var(--card);
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --font-sans: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-mono), Geist Mono, monospace;
+
+  /* Échelle stricte à 7 tailles de texte calibrées avec hauteurs de ligne */
+  --text-xs: 12px;
+  --text-xs--line-height: 1.6;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.6;
+  --text-base: 16px;
+  --text-base--line-height: 1.6;
+  --text-lg: 20px;
+  --text-lg--line-height: 1.2;
+  --text-xl: 24px;
+  --text-xl--line-height: 1.2;
+  --text-2xl: 32px;
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 40px;
+  --text-3xl--line-height: 1.2;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
   font-family: var(--font-sans);
+  font-feature-settings: "cv01", "ss03", "calt", "kern";
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+p, span, li, a, label {
+  line-height: 1.6;
+}
+
+/* Force la taille des champs <input>, <textarea> et <select> à 16px minimum sur mobile (empêche le zoom automatique iOS) */
+@media screen and (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+  }
 }

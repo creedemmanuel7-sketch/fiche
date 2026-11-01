@@ -236,14 +236,14 @@ export default function HomeSearch({
   }, [initialFiches, user?.preferred_stacks])
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col relative">
+    <div className="min-h-screen bg-surface-canvas text-text-primary flex flex-col relative">
       <Header user={user} />
 
       {/* Toast notification */}
       {toastMessage && (
         <div
           role="status"
-          className="fixed bottom-6 right-6 z-50 bg-foreground text-background px-4 py-2.5 rounded-md text-sm font-medium shadow-xl transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 flex items-center gap-2"
+          className="fixed bottom-6 right-6 z-50 bg-surface-raised border border-border-hairline text-text-primary px-4 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
         >
           <Check className="w-4 h-4 text-accent" />
           <span>{toastMessage}</span>
@@ -253,10 +253,10 @@ export default function HomeSearch({
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-10 space-y-6">
         {/* En-tête sobre */}
         <div className="text-center space-y-2 pt-2 pb-1">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
             {title}
           </h1>
-          <p className="text-sm sm:text-base text-muted max-w-lg mx-auto">
+          <p className="text-sm sm:text-base text-text-secondary max-w-lg mx-auto">
             {subtitle}
           </p>
         </div>
@@ -290,7 +290,7 @@ export default function HomeSearch({
         {/* Barre de recherche centrale + Bouton Surprends-moi */}
         <div className="max-w-2xl mx-auto flex items-center gap-2.5">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="search"
               value={searchQuery}
@@ -299,7 +299,7 @@ export default function HomeSearch({
                 setVisibleCount(12)
               }}
               placeholder="Rechercher une fiche par problème, mot-clé ou techno (ex: React, CORS, Next.js)..."
-              className="w-full bg-card border border-border p-3.5 pl-10 rounded-md text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent shadow-sm text-sm transition-all"
+              className="w-full bg-surface-base border border-border-hairline p-3.5 pl-10 rounded-md text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent text-sm transition-all"
             />
           </div>
 
@@ -309,7 +309,7 @@ export default function HomeSearch({
             onClick={handleSurpriseMe}
             disabled={isRolling}
             title="Ouvrir une fiche au hasard"
-            className={`inline-flex items-center gap-2 bg-transparent hover:bg-card border border-border p-3.5 sm:px-4 rounded-md text-sm text-muted hover:text-foreground font-medium transition-all shadow-xs shrink-0 cursor-pointer ${
+            className={`inline-flex items-center gap-2 bg-surface-base hover:bg-surface-raised border border-border-hairline p-3.5 sm:px-4 rounded-md text-sm text-text-secondary hover:text-text-primary font-medium transition-all shrink-0 cursor-pointer ${
               isRolling ? 'rotate-180 transition-transform duration-300' : 'transition-transform duration-300'
             }`}
           >
@@ -321,17 +321,17 @@ export default function HomeSearch({
         {/* ========================================================= */}
         {/* NOUVELLE BARRE DE FILTRES HORIZONTALE ET STICKY AU SCROLL */}
         {/* ========================================================= */}
-        <div className="sticky top-[60px] z-10 bg-background/95 backdrop-blur border-b border-border py-3 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10">
+        <div className="sticky top-[60px] z-10 bg-surface-canvas/95 backdrop-blur border-b border-border-hairline py-3 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10">
           <div className="flex items-center justify-between gap-4">
             {/* Contrôles de filtres et badges */}
             <div className="flex items-center gap-3 overflow-x-auto py-1 scrollbar-none flex-1 min-w-0">
               {/* Menu déroulant Trier par */}
               <div className="flex items-center gap-1.5 shrink-0">
-                <ArrowUpDown className="w-3.5 h-3.5 text-muted shrink-0" />
+                <ArrowUpDown className="w-3.5 h-3.5 text-text-muted shrink-0" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="bg-card border border-border text-foreground text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent font-medium shadow-xs cursor-pointer"
+                  className="bg-surface-base border border-border-hairline text-text-primary text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent font-medium cursor-pointer"
                   title="Trier par"
                 >
                   <option value="recent">Plus récentes</option>
@@ -348,10 +348,10 @@ export default function HomeSearch({
                     setSelectedCategory(e.target.value)
                     setVisibleCount(12)
                   }}
-                  className={`border text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent font-medium shadow-xs cursor-pointer transition-colors ${
+                  className={`border text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-accent font-medium cursor-pointer transition-colors ${
                     selectedCategory
                       ? 'bg-accent-light text-accent border-accent/40 font-semibold'
-                      : 'bg-card border-border text-foreground'
+                      : 'bg-surface-base border-border-hairline text-text-primary'
                   }`}
                   aria-label="Filtrer par catégorie"
                   title="Filtrer par catégorie"
@@ -370,40 +370,40 @@ export default function HomeSearch({
                 <button
                   type="button"
                   onClick={() => setIsStackDropdownOpen((prev) => !prev)}
-                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border transition-all shadow-xs ${
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border transition-all ${
                     isStackDropdownOpen || selectedStacks.length > 0
                       ? 'bg-accent-light text-accent border-accent/40'
-                      : 'bg-card text-foreground border-border hover:bg-background'
+                      : 'bg-surface-base text-text-secondary hover:text-text-primary border-border-hairline hover:bg-surface-raised'
                   }`}
                 >
                   <Filter className="w-3.5 h-3.5 text-accent" />
                   <span>Filtrer par stack</span>
                   {selectedStacks.length > 0 && (
-                    <span className="bg-accent text-white dark:text-background text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-0.5">
+                    <span className="bg-accent text-surface-canvas text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-0.5">
                       {selectedStacks.length}
                     </span>
                   )}
-                  <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform ${isStackDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform ${isStackDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Menu déroulant des stacks avec recherche interne */}
+                {/* Menu déroulant des stacks avec recherche interne (Surface 3 Overlay) */}
                 {isStackDropdownOpen && (
-                  <div className="absolute left-0 mt-2 w-72 max-w-[85vw] bg-card border border-border rounded-lg shadow-xl p-3 z-30 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute left-0 mt-2 w-72 max-w-[85vw] bg-surface-overlay border border-border-hairline rounded-lg p-3 z-30 space-y-2 animate-in fade-in zoom-in-95 duration-150">
                     <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-muted absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <Search className="w-3.5 h-3.5 text-text-muted absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       <input
                         type="text"
                         value={stackSearchQuery}
                         onChange={(e) => setStackSearchQuery(e.target.value)}
                         placeholder="Rechercher une stack (ex: React)..."
                         autoFocus
-                        className="w-full bg-background border border-border rounded-md pl-8 pr-2.5 py-1.5 text-xs text-foreground placeholder-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-surface-base border border-border-hairline rounded-md pl-8 pr-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
                       />
                     </div>
 
                     <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
                       {filteredAvailableStacks.length === 0 ? (
-                        <p className="text-xs text-muted text-center py-3">
+                        <p className="text-xs text-text-muted text-center py-3">
                           Aucune technologie trouvée.
                         </p>
                       ) : (
@@ -416,8 +416,8 @@ export default function HomeSearch({
                               onClick={() => handleToggleStack(stk)}
                               className={`w-full flex items-center justify-between text-left text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
                                 isSelected
-                                  ? 'bg-accent text-white dark:text-background font-semibold'
-                                  : 'text-foreground hover:bg-background'
+                                  ? 'bg-accent text-white font-semibold'
+                                  : 'text-text-primary hover:bg-surface-raised'
                               }`}
                             >
                               <span className="truncate">{stk}</span>
@@ -429,12 +429,12 @@ export default function HomeSearch({
                     </div>
 
                     {selectedStacks.length > 0 && (
-                      <div className="pt-2 border-t border-border flex items-center justify-between text-[11px]">
-                        <span className="text-muted">{selectedStacks.length} active(s)</span>
+                      <div className="pt-2 border-t border-border-hairline flex items-center justify-between text-[11px]">
+                        <span className="text-text-muted">{selectedStacks.length} active(s)</span>
                         <button
                           type="button"
                           onClick={() => setSelectedStacks([])}
-                          className="text-accent hover:underline font-medium"
+                          className="text-accent hover:underline font-medium cursor-pointer"
                         >
                           Effacer la sélection
                         </button>

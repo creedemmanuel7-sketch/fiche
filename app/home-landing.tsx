@@ -65,14 +65,14 @@ export default function HomeLanding({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col relative">
+    <div className="min-h-screen bg-surface-canvas text-text-primary flex flex-col relative">
       <Header user={user} />
 
       {/* Toast notification */}
       {toastMessage && (
         <div
           role="status"
-          className="fixed bottom-6 right-6 z-50 bg-foreground text-background px-4 py-2.5 rounded-md text-sm font-medium shadow-xl transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 flex items-center gap-2"
+          className="fixed bottom-6 right-6 z-50 bg-surface-raised border border-border-hairline text-text-primary px-4 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
         >
           <Check className="w-4 h-4 text-accent" />
           <span>{toastMessage}</span>
@@ -82,23 +82,23 @@ export default function HomeLanding({
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-10 space-y-10">
         {/* En-tête sobre et aéré */}
         <div className="text-center space-y-3 pt-6 pb-2">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
             Fiche
           </h1>
-          <p className="text-base sm:text-lg text-muted max-w-xl mx-auto">
+          <p className="text-base text-text-secondary max-w-xl mx-auto">
             Le savoir technique de la communauté, structuré et capitalisé.
           </p>
         </div>
 
         {/* Section Recommandée "Pour toi" (si connecté avec stacks préférées) */}
         {recommendedFiches.length > 0 && (
-          <section className="bg-card border border-border rounded-lg p-5 space-y-4 shadow-sm">
+          <section className="bg-surface-base border border-border-hairline rounded-lg p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
                 <Sparkles className="w-4 h-4 text-accent" />
                 <span>Pour toi (recommandé selon tes stacks)</span>
               </div>
-              <span className="text-xs text-muted">
+              <span className="text-xs text-text-muted">
                 {user?.preferred_stacks?.join(', ')}
               </span>
             </div>
@@ -118,8 +118,8 @@ export default function HomeLanding({
 
         {/* Dernières fiches publiées (max 6) */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between border-b border-border pb-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+          <div className="flex items-center justify-between border-b border-border-hairline pb-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-text-muted">
               Dernières fiches publiées
             </h2>
             <Link
@@ -146,7 +146,7 @@ export default function HomeLanding({
           <div className="text-center pt-8 pb-6">
             <Link
               href="/explorer"
-              className="inline-flex items-center gap-2.5 bg-foreground text-background hover:opacity-90 px-7 py-3 rounded-md text-sm font-semibold transition-all shadow-md group"
+              className="inline-flex items-center gap-2.5 bg-text-primary text-surface-canvas hover:opacity-90 px-7 py-3 rounded-md text-sm font-semibold transition-all group"
             >
               <span>Voir toutes les fiches</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />

@@ -203,7 +203,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
   })
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col relative">
+    <div className="min-h-screen bg-surface-canvas text-text-primary flex flex-col relative">
       <Header user={user} />
 
       {/* Toast notification avec animation spring Framer Motion */}
@@ -215,7 +215,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed bottom-6 right-6 z-50 bg-foreground text-background px-4 py-2.5 rounded-md text-sm font-medium shadow-lg flex items-center gap-2"
+            className="fixed bottom-6 right-6 z-50 bg-surface-raised border border-border-hairline text-text-primary px-4 py-2.5 rounded-md text-sm font-medium flex items-center gap-2"
           >
             <Check className="w-4 h-4 text-accent stroke-[3]" />
             <span>{toastMessage}</span>
@@ -225,14 +225,14 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
 
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-10 space-y-8">
         {/* Navigation retour */}
-        <div className="flex items-center justify-between pb-4 border-b border-border">
+        <div className="flex items-center justify-between pb-4 border-b border-border-hairline">
           <Link
             href="/"
-            className="text-sm font-medium text-muted hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+            className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-1.5"
           >
             ← Retour à l'accueil
           </Link>
-          <div className="flex items-center gap-2 text-sm text-muted">
+          <div className="flex items-center gap-2 text-sm text-text-secondary">
             <span className="inline-flex items-center gap-1.5">
               <span>Auteur : {fiche.author_name || 'Équipe Fiche'}</span>
               {fiche.author_linkedin_url && (
@@ -273,7 +273,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
               fiche.tags.map((tag, idx) => (
                 <span
                   key={idx}
-                  className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium"
+                  className="bg-surface-raised border border-border-hairline text-text-secondary text-xs px-2.5 py-1 rounded-full font-medium"
                 >
                   {tag}
                 </span>
@@ -282,7 +282,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
               fiche.stack.map((item, idx) => (
                 <span
                   key={`stack-${idx}`}
-                  className="bg-accent-light text-accent text-xs px-2.5 py-1 rounded-full font-medium"
+                  className="bg-surface-raised border border-border-hairline text-accent text-xs px-2.5 py-1 rounded-full font-medium"
                 >
                   {item}
                 </span>
@@ -290,33 +290,33 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           </div>
         </div>
 
-        {/* Bloc Problème */}
-        <section className="bg-card border border-border rounded-md p-6 space-y-2 shadow-sm">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+        {/* Bloc Problème (Surface 1 Base, sans ombre) */}
+        <section className="bg-surface-base border border-border-hairline rounded-md p-6 space-y-2">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-text-muted">
             Problème
           </h2>
-          <p className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-wrap">
+          <p className="text-sm sm:text-base text-text-primary leading-relaxed whitespace-pre-wrap">
             {fiche.problem}
           </p>
         </section>
 
-        {/* Bloc Solution */}
-        <section className="bg-card border border-border rounded-md p-6 space-y-2 shadow-sm">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted">
+        {/* Bloc Solution (Surface 1 Base, sans ombre) */}
+        <section className="bg-surface-base border border-border-hairline rounded-md p-6 space-y-2">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-text-muted">
             Solution
           </h2>
-          <div className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-wrap">
+          <div className="text-sm sm:text-base text-text-primary leading-relaxed whitespace-pre-wrap">
             {fiche.solution}
           </div>
         </section>
 
         {/* Bloc dépliable Question d'origine */}
         {fiche.original_question && (
-          <div className="border border-border bg-card/70 rounded-md p-4 transition-all">
+          <div className="border border-border-hairline bg-surface-raised/40 rounded-md p-4 transition-all">
             <button
               type="button"
               onClick={() => setShowOriginal(!showOriginal)}
-              className="w-full flex items-center justify-between text-left text-xs font-medium text-muted hover:text-foreground transition-colors"
+              className="w-full flex items-center justify-between text-left text-xs font-medium text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
             >
               <span>Voir la question d'origine</span>
               <svg
@@ -339,22 +339,22 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
         )}
 
         {/* Bouton Utile & Partage */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-border">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-border-hairline">
           <div className="flex items-center gap-3">
             <button
               type="button"
               id="useful-vote-button"
               onClick={handleVote}
               disabled={hasVoted || voting}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all shadow-sm ${
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-medium transition-all ${
                 hasVoted
-                  ? 'bg-card text-muted cursor-not-allowed border border-border'
-                  : 'bg-foreground text-background hover:opacity-90 active:scale-[0.98]'
+                  ? 'bg-surface-base text-text-muted cursor-not-allowed border border-border-hairline'
+                  : 'bg-text-primary text-surface-canvas hover:opacity-90 active:scale-[0.98]'
               }`}
             >
               {hasVoted ? (
                 <>
-                  <Check className="w-4 h-4 text-muted" />
+                  <Check className="w-4 h-4 text-text-muted" />
                   <span>Déjà voté ({usefulCount})</span>
                 </>
               ) : (
@@ -386,10 +386,10 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
               id="bookmark-button"
               onClick={handleToggleBookmark}
               title={isSaved ? 'Retirer des favoris' : 'Sauvegarder cette fiche'}
-              className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-sm font-medium border transition-all shadow-sm active:scale-[0.98] ${
+              className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-sm font-medium border transition-all active:scale-[0.98] ${
                 isSaved
                   ? 'bg-accent-light text-accent border-accent/40'
-                  : 'bg-card border-border hover:border-gray-400 dark:hover:border-gray-600 text-foreground'
+                  : 'bg-surface-base border-border-hairline hover:bg-surface-raised text-text-primary'
               }`}
             >
               <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
@@ -402,9 +402,9 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
               id="share-link-button"
               onClick={handleCopyLink}
               title="Copier le lien de la fiche"
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-md text-sm font-medium bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 text-foreground transition-all shadow-sm active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-md text-sm font-medium bg-surface-base border border-border-hairline hover:bg-surface-raised text-text-primary transition-all active:scale-[0.98]"
             >
-              <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -421,7 +421,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
               id="share-linkedin-button"
               onClick={handleShareLinkedIn}
               title="Partager sur LinkedIn"
-              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-sm font-medium bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 text-muted hover:text-foreground transition-all shadow-sm active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-md text-sm font-medium bg-surface-base border border-border-hairline hover:bg-surface-raised text-text-secondary hover:text-text-primary transition-all active:scale-[0.98]"
             >
               <svg className="w-4 h-4 fill-current text-[#0A66C2]" viewBox="0 0 24 24">
                 <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
@@ -430,8 +430,8 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
             </button>
           </div>
 
-          <div className="text-sm text-muted inline-flex items-center gap-1.5">
-            <Eye className="w-4 h-4 text-muted" />
+          <div className="text-sm text-text-muted inline-flex items-center gap-1.5">
+            <Eye className="w-4 h-4 text-text-muted" />
             <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
           </div>
         </div>
@@ -439,13 +439,13 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
         {/* Section Feedback d'utilité : Cette fiche a-t-elle résolu ton problème ? */}
         <section
           id="fiche-feedback-section"
-          className="bg-card border border-border rounded-md p-6 space-y-4 shadow-sm"
+          className="bg-surface-base border border-border-hairline rounded-md p-6 space-y-4"
         >
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">
+            <h3 className="text-sm font-semibold text-text-primary">
               Cette fiche a-t-elle résolu ton problème ?
             </h3>
-            <p className="text-xs text-muted">
+            <p className="text-xs text-text-secondary">
               Ton retour aide l'auteur à améliorer la qualité et la complétude de cette fiche.
             </p>
           </div>
@@ -463,7 +463,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                   id="feedback-yes-btn"
                   onClick={() => handleFeedback(true)}
                   disabled={submittingFeedback}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-background border border-border hover:border-accent text-foreground hover:text-accent transition-all shadow-sm active:scale-[0.98]"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-surface-raised border border-border-hairline hover:bg-surface-overlay text-text-primary transition-all active:scale-[0.98]"
                 >
                   <ThumbsUp className="w-4 h-4 text-accent" />
                   <span>Oui</span>
@@ -474,13 +474,13 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                   id="feedback-no-btn"
                   onClick={() => setShowCommentInput(true)}
                   disabled={submittingFeedback}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-background border transition-all shadow-sm active:scale-[0.98] ${
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs sm:text-sm font-medium bg-surface-raised border transition-all active:scale-[0.98] ${
                     showCommentInput
-                      ? 'border-foreground text-foreground ring-1 ring-foreground/20'
-                      : 'border-border hover:border-foreground/50 text-foreground'
+                      ? 'border-border-hairline text-text-primary ring-1 ring-border-hairline'
+                      : 'border-border-hairline hover:bg-surface-overlay text-text-secondary hover:text-text-primary'
                   }`}
                 >
-                  <ThumbsDown className="w-4 h-4 text-muted" />
+                  <ThumbsDown className="w-4 h-4 text-text-muted" />
                   <span>Non</span>
                 </button>
               </div>
@@ -493,7 +493,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                     onChange={(e) => setFeedbackComment(e.target.value)}
                     placeholder="Qu'est-ce qui manque ? (optionnel)"
                     rows={3}
-                    className="w-full bg-background border border-border rounded-md p-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent resize-none transition-all"
+                    className="w-full bg-surface-raised border border-border-hairline rounded-md p-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent resize-none transition-all"
                   />
                   <div className="flex items-center gap-2">
                     <button
@@ -501,14 +501,14 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                       id="feedback-submit-btn"
                       onClick={() => handleFeedback(false, feedbackComment)}
                       disabled={submittingFeedback}
-                      className="bg-foreground text-background hover:opacity-90 px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all shadow-sm disabled:opacity-50"
+                      className="bg-text-primary text-surface-canvas hover:opacity-90 px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all disabled:opacity-50"
                     >
                       {submittingFeedback ? 'Envoi...' : 'Envoyer le feedback'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowCommentInput(false)}
-                      className="text-xs text-muted hover:text-foreground px-3 py-2 transition-colors"
+                      className="text-xs text-text-muted hover:text-text-primary px-3 py-2 transition-colors"
                     >
                       Annuler
                     </button>

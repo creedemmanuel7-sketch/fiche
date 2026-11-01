@@ -11,7 +11,7 @@ export default function Header({ user }: HeaderProps) {
   const isAdmin = user && (user.role === 'admin' || user.email?.startsWith('test+') || user.email === 'admin@fiche.app')
 
   return (
-    <header className="bg-card border-b border-border sticky top-0 z-50">
+    <header className="bg-surface-canvas/90 backdrop-blur-md border-b border-border-hairline sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
           <Logo />
@@ -19,7 +19,7 @@ export default function Header({ user }: HeaderProps) {
         <nav className="flex items-center gap-4 sm:gap-6">
           <Link
             href="/explorer"
-            className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+            className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
           >
             Explorer
           </Link>
@@ -28,7 +28,7 @@ export default function Header({ user }: HeaderProps) {
             <div className="flex items-center gap-3 sm:gap-4">
               <Link
                 href="/favoris"
-                className="text-sm font-medium text-muted hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+                className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors inline-flex items-center gap-1.5"
                 title="Fiches sauvegardées"
               >
                 <Bookmark className="w-3.5 h-3.5" />
@@ -37,7 +37,7 @@ export default function Header({ user }: HeaderProps) {
 
               <Link
                 href="/dashboard"
-                className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+                className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
               >
                 Dashboard
               </Link>
@@ -57,7 +57,7 @@ export default function Header({ user }: HeaderProps) {
 
               <Link
                 href="/create"
-                className="bg-foreground text-background hover:opacity-90 px-3.5 py-1.5 rounded-md text-sm font-medium transition-all shadow-sm"
+                className="bg-text-primary text-surface-canvas hover:opacity-90 px-3.5 py-1.5 rounded-md text-sm font-medium transition-all"
               >
                 Créer une fiche
               </Link>
@@ -67,7 +67,7 @@ export default function Header({ user }: HeaderProps) {
               <ThemeToggle />
               <Link
                 href="/login"
-                className="bg-foreground text-background hover:opacity-90 px-3.5 py-1.5 rounded-md text-sm font-medium transition-all shadow-sm"
+                className="bg-text-primary text-surface-canvas hover:opacity-90 px-3.5 py-1.5 rounded-md text-sm font-medium transition-all"
               >
                 Se connecter
               </Link>

@@ -254,7 +254,7 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
       {/* Formulaire de saisie brute avec animation de scan laser pendant la génération */}
       <form
         onSubmit={handleGenerate}
-        className="relative overflow-hidden bg-card p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
+        className="relative overflow-hidden bg-surface-base p-6 sm:p-8 border border-border-hairline rounded-md space-y-5"
       >
         {/* Ligne laser verte animée qui traverse le formulaire lors de la génération */}
         {loading && (
@@ -297,7 +297,7 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
         )}
 
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">
+          <label className="block text-sm font-medium text-text-primary">
             Question brute
           </label>
           <textarea
@@ -305,13 +305,13 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
             onChange={(e) => setRawQuestion(e.target.value)}
             rows={4}
             placeholder="Collez ici la question technique posée sur WhatsApp ou Facebook..."
-            className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+            className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all"
             required
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">
+          <label className="block text-sm font-medium text-text-primary">
             Réponse brute
           </label>
           <textarea
@@ -319,7 +319,7 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
             onChange={(e) => setRawAnswer(e.target.value)}
             rows={5}
             placeholder="Collez ici la réponse apportée dans la discussion..."
-            className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+            className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all"
             required
           />
         </div>
@@ -349,41 +349,41 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
         <form
           onSubmit={handlePublish}
           id="generated-fiche-form"
-          className="bg-card p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
+          className="bg-surface-base p-6 sm:p-8 border border-border-hairline rounded-md space-y-5"
         >
-          <div className="pb-3 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground">
+          <div className="pb-3 border-b border-border-hairline">
+            <h2 className="text-lg font-semibold text-text-primary">
               Fiche structurée proposée par l'IA
             </h2>
-            <p className="text-xs text-muted mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               Vous pouvez réviser et enrichir les champs avant publication.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5 md:col-span-2">
-              <label className="block text-sm font-medium text-foreground">
+              <label className="block text-sm font-medium text-text-primary">
                 Titre
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+                className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground flex items-center justify-between">
+              <label className="block text-sm font-medium text-text-primary flex items-center justify-between">
                 <span>Catégorie</span>
-                <span className="text-xs text-muted font-normal">Savoir ciblé</span>
+                <span className="text-xs text-text-muted font-normal">Savoir ciblé</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as Category)}
                 aria-label="Sélectionner la catégorie"
-                className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm font-medium"
+                className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent transition-all font-medium"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -395,33 +395,33 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="block text-sm font-medium text-text-primary">
               Problème
             </label>
             <textarea
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
               rows={4}
-              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all"
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="block text-sm font-medium text-text-primary">
               Solution
             </label>
             <textarea
               value={solution}
               onChange={(e) => setSolution(e.target.value)}
               rows={6}
-              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all"
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="block text-sm font-medium text-text-primary">
               Tags (séparés par des virgules)
             </label>
             <input
@@ -429,12 +429,12 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
               value={tagsStr}
               onChange={(e) => setTagsStr(e.target.value)}
               placeholder="react, css, git"
-              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="block text-sm font-medium text-text-primary">
               Technologies / Stack (séparées par des virgules)
             </label>
             <input
@@ -442,7 +442,7 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
               value={stackStr}
               onChange={(e) => setStackStr(e.target.value)}
               placeholder="Next.js, Tailwind, Python"
-              className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
+              className="w-full bg-surface-raised border border-border-hairline rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all"
             />
           </div>
 
@@ -487,17 +487,17 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 10 }}
             transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-            className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-5"
+            className="bg-surface-overlay border border-border-hairline rounded-xl max-w-md w-full p-6 sm:p-8 space-y-5"
           >
             <div className="w-12 h-12 rounded-full bg-accent-light border border-accent/20 flex items-center justify-center text-accent mx-auto">
               <Lock className="w-6 h-6" />
             </div>
 
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-bold tracking-tight text-foreground">
+              <h3 className="text-lg font-bold tracking-tight text-text-primary">
                 Connexion requise
               </h3>
-              <p className="text-sm text-muted leading-relaxed">
+              <p className="text-sm text-text-muted leading-relaxed">
                 Connecte-toi pour publier ta fiche et signer ton travail. Ton brouillon est sauvegardé.
               </p>
             </div>
@@ -505,14 +505,14 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Link
                 href="/login?redirect=/create&message=Connecte-toi+pour+publier+ta+fiche+et+signer+ton+travail.+Ton+brouillon+est+sauvegardé."
-                className="flex-1 bg-accent hover:opacity-90 text-white text-center py-2.5 px-4 rounded-md text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5"
+                className="flex-1 bg-accent hover:opacity-90 text-white text-center py-2.5 px-4 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-1.5"
               >
                 <span>Se connecter</span>
               </Link>
               <button
                 type="button"
                 onClick={() => setShowAuthModal(false)}
-                className="border border-border bg-card hover:bg-background text-foreground text-center py-2.5 px-4 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className="border border-border-hairline bg-surface-raised hover:bg-surface-base text-text-primary text-center py-2.5 px-4 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 Continuer l'édition
               </button>
