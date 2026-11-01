@@ -269,6 +269,7 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
 
       {/* Formulaire de saisie brute avec animation de scan laser pendant la génération */}
       <form
+        id="raw-fiche-form"
         onSubmit={handleGenerate}
         className="relative overflow-hidden bg-surface-base p-6 sm:p-8 border border-border-hairline rounded-md space-y-5"
       >
@@ -403,25 +404,6 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
             <span>{loading ? LOADING_STEPS[loadingStepIndex] : 'Générer la fiche'}</span>
           </button>
         </div>
-
-        {/* Barre d'action fixe en bas sur mobile (Bottom Action Bar) */}
-        {!hasGenerated && (
-          <div
-            id="mobile-generate-action-bar"
-            className="md:hidden fixed bottom-0 left-0 right-0 z-40 p-3 backdrop-blur-2xl bg-surface-canvas/80 border-t border-border-hairline pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-          >
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full min-h-[44px] bg-accent text-white py-3 px-5 rounded-md text-sm font-semibold hover:opacity-90 disabled:opacity-75 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {loading && (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              )}
-              <span>{loading ? LOADING_STEPS[loadingStepIndex] : 'Générer la fiche'}</span>
-            </button>
-          </div>
-        )}
       </form>
 
       {/* Formulaire d'édition pré-rempli par Gemini */}
@@ -553,39 +535,53 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
               )}
             </button>
           </div>
-
-          {/* Barre d'action fixe en bas sur mobile pour Publier */}
-          <div
-            id="mobile-publish-action-bar"
-            className="md:hidden fixed bottom-0 left-0 right-0 z-40 p-3 backdrop-blur-2xl bg-surface-canvas/80 border-t border-border-hairline pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-          >
-            <button
-              type="submit"
-              disabled={publishing || publishSuccess}
-              className="w-full min-h-[44px] bg-text-primary text-surface-canvas py-3 px-5 rounded-md text-sm font-semibold hover:opacity-90 disabled:opacity-75 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {publishSuccess ? (
-                <motion.span
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: [0.6, 1.15, 1], opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="inline-flex items-center gap-2 text-accent font-semibold"
-                >
-                  <Check className="w-4 h-4 stroke-[3]" />
-                  <span>Publiée avec succès !</span>
-                </motion.span>
-              ) : publishing ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-surface-canvas/30 border-t-surface-canvas rounded-full animate-spin" />
-                  <span>Publication en cours...</span>
-                </>
-              ) : (
-                <span>Publier la fiche</span>
-              )}
-            </button>
-          </div>
         </form>
       )}
+
+      {/* Barre d'action fixe en bas sur mobile (100% largeur écran, aucun overflow) */}
+      <div
+        id="mobile-bottom-action-bar"
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 p-3.5 backdrop-blur-2xl bg-surface-canvas/90 border-t border-border-hairline pb-[max(0.875rem,env(safe-area-inset-bottom))]"
+      >
+        <button
+          type="submit"
+          form={hasGenerated ? 'generated-fiche-form' : 'raw-fiche-form'}
+          disabled={hasGenerated ? publishing || publishSuccess : loading}
+          className={`w-full min-h-[44px] py-3 px-5 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            hasGenerated
+              ? 'bg-text-primary text-surface-canvas hover:opacity-90 disabled:opacity-75'
+              : 'bg-accent text-white hover:opacity-90 disabled:opacity-75'
+          }`}
+        >
+          {hasGenerated ? (
+            publishSuccess ? (
+              <motion.span
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: [0.6, 1.15, 1], opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="inline-flex items-center gap-2 text-accent font-semibold"
+              >
+                <Check className="w-4 h-4 stroke-[3]" />
+                <span>Publiée avec succès !</span>
+              </motion.span>
+            ) : publishing ? (
+              <>
+                <span className="w-4 h-4 border-2 border-surface-canvas/30 border-t-surface-canvas rounded-full animate-spin" />
+                <span>Publication en cours...</span>
+              </>
+            ) : (
+              <span>Publier la fiche</span>
+            )
+          ) : loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>{LOADING_STEPS[loadingStepIndex]}</span>
+            </>
+          ) : (
+            <span>Générer la fiche</span>
+          )}
+        </button>
+      </div>
 
       {/* Modale d'invitation à se connecter pour visiteur anonyme */}
       {showAuthModal && (

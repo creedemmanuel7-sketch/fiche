@@ -10,9 +10,9 @@ async function CreateContent() {
   } = await supabase.auth.getUser()
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-surface-canvas text-text-primary flex flex-col">
       <Header user={user ? { email: user.email } : null} />
-      <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-10">
+      <main className="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 lg:p-10 pb-24">
         <CreateFicheForm userId={user?.id || null} />
       </main>
     </div>
