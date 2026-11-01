@@ -3,11 +3,18 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { Shield, Lock, Check } from 'lucide-react'
 
 export const CATEGORIES = ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'] as const
 export type Category = (typeof CATEGORIES)[number]
+
+const LOADING_STEPS = [
+  'Analyse de la question...',
+  'Anonymisation des données...',
+  'Structuration de la solution...',
+]
 
 interface StructuredData {
   title: string
@@ -28,10 +35,24 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
 
   // State
   const [loading, setLoading] = useState(false)
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0)
   const [publishing, setPublishing] = useState(false)
+  const [publishSuccess, setPublishSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [restoredToast, setRestoredToast] = useState(false)
+
+  // Effet pour alterner le texte de chargement de l'IA
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStepIndex(0)
+      return
+    }
+    const interval = setInterval(() => {
+      setLoadingStepIndex((prev) => (prev + 1) % LOADING_STEPS.length)
+    }, 1200)
+    return () => clearInterval(interval)
+  }, [loading])
 
   // Generated / editable fields
   const [hasGenerated, setHasGenerated] = useState(false)
@@ -180,6 +201,8 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
         throw new Error(insertError.message)
       }
 
+      setPublishSuccess(true)
+      await new Promise((r) => setTimeout(r, 700))
       router.push('/dashboard?success=published')
       router.refresh()
     } catch (err: unknown) {
@@ -210,10 +233,16 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
       </div>
 
       {restoredToast && (
-        <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm rounded-md shadow-xs flex items-center gap-2.5 animate-in fade-in">
+        <motion.div
+          initial={{ opacity: 0, y: -16, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -16, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+          className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm rounded-md shadow-xs flex items-center gap-2.5"
+        >
           <Check className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span>✨ Brouillon restauré automatiquement ! Vous pouvez vérifier et publier votre fiche.</span>
-        </div>
+        </motion.div>
       )}
 
       {error && (
@@ -222,11 +251,51 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
         </div>
       )}
 
-      {/* Formulaire de saisie brute */}
+      {/* Formulaire de saisie brute avec animation de scan laser pendant la génération */}
       <form
         onSubmit={handleGenerate}
-        className="bg-card p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
+        className="relative overflow-hidden bg-card p-6 sm:p-8 border border-border rounded-md shadow-sm space-y-5"
       >
+        {/* Ligne laser verte animée qui traverse le formulaire lors de la génération */}
+        {loading && (
+          <motion.div
+            initial={{ top: '0%' }}
+            animate={{ top: ['0%', '100%', '0%'] }}
+            transition={{
+              duration: 2.2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent to-transparent shadow-[0_0_12px_#108966] pointer-events-none z-20"
+          />
+        )}
+
+        {/* HUD indicateur des étapes de structuration par l'IA */}
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3.5 bg-accent/10 border border-accent/25 rounded-md flex items-center justify-between text-xs text-foreground font-medium"
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent" />
+              </span>
+              <motion.span
+                key={loadingStepIndex}
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-accent font-semibold text-sm"
+              >
+                {LOADING_STEPS[loadingStepIndex]}
+              </motion.span>
+            </div>
+            <span className="text-muted text-[11px] font-mono uppercase tracking-wider hidden sm:inline">IA en cours</span>
+          </motion.div>
+        )}
+
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-foreground">
             Question brute
@@ -265,12 +334,12 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
           <button
             type="submit"
             disabled={loading}
-            className="bg-accent text-white px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-all shadow-sm inline-flex items-center gap-2"
+            className="bg-accent text-white px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-75 transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer"
           >
             {loading && (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             )}
-            <span>{loading ? 'Génération par Gemini en cours...' : 'Générer la fiche'}</span>
+            <span>{loading ? LOADING_STEPS[loadingStepIndex] : 'Générer la fiche'}</span>
           </button>
         </div>
       </form>
@@ -380,13 +449,27 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
           <div className="pt-2">
             <button
               type="submit"
-              disabled={publishing}
-              className="bg-foreground text-background px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-all shadow-sm inline-flex items-center gap-2"
+              disabled={publishing || publishSuccess}
+              className="bg-foreground text-background px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-75 transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer"
             >
-              {publishing && (
-                <span className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+              {publishSuccess ? (
+                <motion.span
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: [0.6, 1.15, 1], opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="inline-flex items-center gap-2 text-accent font-semibold"
+                >
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>Publiée avec succès !</span>
+                </motion.span>
+              ) : publishing ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                  <span>Publication en cours...</span>
+                </>
+              ) : (
+                <span>Publier la fiche</span>
               )}
-              <span>{publishing ? 'Publication en cours...' : 'Publier la fiche'}</span>
             </button>
           </div>
         </form>
@@ -397,9 +480,15 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
         >
-          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-5 animate-in zoom-in-95 duration-200">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 10 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 26 }}
+            className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-5"
+          >
             <div className="w-12 h-12 rounded-full bg-accent-light border border-accent/20 flex items-center justify-center text-accent mx-auto">
               <Lock className="w-6 h-6" />
             </div>
@@ -428,7 +517,7 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
                 Continuer l'édition
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { ThumbsUp, Eye, Bookmark } from 'lucide-react'
 
 export interface PublicFiche {
@@ -115,7 +116,11 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
   })
 
   return (
-    <div className="bg-card border border-border hover:border-gray-400 dark:hover:border-gray-600 rounded-lg p-5 flex flex-col justify-between space-y-4 transition-all shadow-sm group relative">
+    <motion.div
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className="bg-card border border-border hover:border-accent/40 hover:shadow-md rounded-lg p-5 flex flex-col justify-between space-y-4 transition-all group relative cursor-pointer"
+    >
       <div className="space-y-2.5">
         {/* En-tête de carte : Catégorie + Auteur + Date + Signet Bookmark */}
         <div className="flex items-center justify-between gap-2 text-xs text-muted">
@@ -184,6 +189,6 @@ export default function FicheCard({ fiche, isSaved, onToggleFavorite }: FicheCar
           <span>{fiche.view_count || 0} vue{fiche.view_count > 1 ? 's' : ''}</span>
         </span>
       </div>
-    </div>
+    </motion.div>
   )
 }

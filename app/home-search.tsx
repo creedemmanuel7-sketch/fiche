@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import FicheCard, { type PublicFiche, resolveCategory } from '@/components/FicheCard'
+import { SkeletonGrid } from '@/components/SkeletonCard'
 import {
   Sparkles,
   ArrowUpDown,
@@ -28,6 +29,7 @@ interface HomeSearchProps {
   initialSavedIds?: string[]
   title?: string
   subtitle?: string
+  isLoading?: boolean
 }
 
 type SortOption = 'recent' | 'useful' | 'views'
@@ -38,6 +40,7 @@ export default function HomeSearch({
   initialSavedIds = [],
   title = 'Explorer les fiches',
   subtitle = 'Recherchez, filtrez par stack et accédez à tout le savoir capitalisé.',
+  isLoading = false,
 }: HomeSearchProps) {
   const router = useRouter()
   const [isRolling, setIsRolling] = useState(false)
@@ -512,7 +515,9 @@ export default function HomeSearch({
 
         {/* Grille des fiches */}
         <section className="w-full space-y-6 pt-2">
-          {filteredFiches.length === 0 ? (
+          {isLoading ? (
+            <SkeletonGrid count={6} />
+          ) : filteredFiches.length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-12 text-center shadow-sm space-y-2">
               <p className="text-sm font-medium text-foreground">Aucune fiche ne correspond à tes critères.</p>
               <p className="text-xs text-muted">Essaie d'élargir ta recherche ou d'effacer les filtres.</p>

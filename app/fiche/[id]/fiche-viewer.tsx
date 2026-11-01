@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import Header from '@/components/Header'
 import { getFingerprint } from '@/lib/fingerprint'
 import { getCategoryBadgeClass, resolveCategory } from '@/components/FicheCard'
@@ -31,6 +32,7 @@ interface FicheViewerProps {
 export default function FicheViewer({ fiche, user }: FicheViewerProps) {
   const [usefulCount, setUsefulCount] = useState(fiche.useful_count || 0)
   const [hasVoted, setHasVoted] = useState(false)
+  const [justVoted, setJustVoted] = useState(false)
   const [voting, setVoting] = useState(false)
   const [showOriginal, setShowOriginal] = useState(false)
 
@@ -135,6 +137,8 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
         const data = await res.json()
         setUsefulCount(data.useful_count ?? usefulCount + 1)
         setHasVoted(true)
+        setJustVoted(true)
+        setTimeout(() => setJustVoted(false), 1200)
       } else if (res.status === 400) {
         setHasVoted(true)
       }
@@ -202,16 +206,22 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
     <div className="min-h-screen bg-background text-foreground flex flex-col relative">
       <Header user={user} />
 
-      {/* Toast notification */}
-      {showToast && (
-        <div
-          role="status"
-          className="fixed bottom-6 right-6 z-50 bg-foreground text-background px-4 py-2.5 rounded-md text-sm font-medium shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2 duration-200 flex items-center gap-2"
-        >
-          <Check className="w-4 h-4 text-accent" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      {/* Toast notification avec animation spring Framer Motion */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            role="status"
+            initial={{ opacity: 0, y: 30, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.92 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            className="fixed bottom-6 right-6 z-50 bg-foreground text-background px-4 py-2.5 rounded-md text-sm font-medium shadow-lg flex items-center gap-2"
+          >
+            <Check className="w-4 h-4 text-accent stroke-[3]" />
+            <span>{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-10 space-y-8">
         {/* Navigation retour */}
@@ -349,8 +359,23 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
                 </>
               ) : (
                 <>
-                  <ThumbsUp className="w-4 h-4" />
-                  <span>Utile ({usefulCount})</span>
+                  <motion.span
+                    animate={justVoted ? { scale: [1, 1.45, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                    className="inline-flex items-center"
+                  >
+                    <ThumbsUp className={`w-4 h-4 ${justVoted ? 'text-accent fill-accent' : ''}`} />
+                  </motion.span>
+                  <motion.span
+                    animate={
+                      justVoted
+                        ? { color: ['#108966', '#34d399', '#108966', 'currentColor'] }
+                        : {}
+                    }
+                    transition={{ duration: 0.9 }}
+                  >
+                    Utile ({usefulCount})
+                  </motion.span>
                 </>
               )}
             </button>
