@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useTheme } from 'next-themes'
+import ThemeToggle from './ThemeToggle'
 import {
   X,
   Compass,
@@ -12,8 +12,6 @@ import {
   Shield,
   PlusCircle,
   Search,
-  Sun,
-  Moon,
   LogIn,
 } from 'lucide-react'
 import Logo from './Logo'
@@ -25,7 +23,6 @@ interface MobileMenuProps {
 }
 
 export default function MobileMenu({ isOpen, onClose, user }: MobileMenuProps) {
-  const { resolvedTheme, setTheme } = useTheme()
   const isAdmin =
     user &&
     (user.role === 'admin' ||
@@ -49,10 +46,6 @@ export default function MobileMenu({ isOpen, onClose, user }: MobileMenuProps) {
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('open-command-menu'))
     }, 150)
-  }
-
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
   }
 
   return (
@@ -181,21 +174,7 @@ export default function MobileMenu({ isOpen, onClose, user }: MobileMenuProps) {
 
             {/* Bas du menu : Basculement de Thème + Email */}
             <div className="pt-6 border-t border-border-hairline space-y-3">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-md bg-surface-raised border border-border-hairline text-text-primary text-xs font-medium hover:bg-surface-overlay transition-colors min-h-[44px] cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  {resolvedTheme === 'dark' ? (
-                    <Sun className="w-4 h-4 text-amber-400" />
-                  ) : (
-                    <Moon className="w-4 h-4 text-indigo-400" />
-                  )}
-                  <span>Mode {resolvedTheme === 'dark' ? 'Sombre' : 'Clair'}</span>
-                </div>
-                <span className="text-[11px] text-text-muted">Basculer</span>
-              </button>
+              <ThemeToggle showLabel />
 
               {user?.email && (
                 <div className="text-[11px] text-text-muted truncate px-1">
