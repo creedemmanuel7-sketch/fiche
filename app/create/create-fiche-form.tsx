@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Shield } from 'lucide-react'
+import { Shield, Lock, Check } from 'lucide-react'
 
 export const CATEGORIES = ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'] as const
 export type Category = (typeof CATEGORIES)[number]
@@ -18,7 +18,7 @@ interface StructuredData {
   stack: string[]
 }
 
-export default function CreateFicheForm({ userId }: { userId: string }) {
+export default function CreateFicheForm({ userId }: { userId: string | null }) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -30,6 +30,8 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [restoredToast, setRestoredToast] = useState(false)
 
   // Generated / editable fields
   const [hasGenerated, setHasGenerated] = useState(false)
@@ -39,6 +41,34 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
   const [solution, setSolution] = useState('')
   const [tagsStr, setTagsStr] = useState('')
   const [stackStr, setStackStr] = useState('')
+
+  // Restauration du brouillon sauvegardé si présent dans localStorage
+  useEffect(() => {
+    try {
+      const savedDraft = localStorage.getItem('fiche_draft')
+      if (savedDraft) {
+        const draft = JSON.parse(savedDraft)
+        if (draft.title || draft.problem || draft.solution) {
+          if (draft.rawQuestion) setRawQuestion(draft.rawQuestion)
+          if (draft.rawAnswer) setRawAnswer(draft.rawAnswer)
+          if (draft.title) setTitle(draft.title)
+          if (draft.problem) setProblem(draft.problem)
+          if (draft.solution) setSolution(draft.solution)
+          if (draft.tagsStr) setTagsStr(draft.tagsStr)
+          if (draft.stackStr) setStackStr(draft.stackStr)
+          if (draft.category && CATEGORIES.includes(draft.category)) {
+            setCategory(draft.category)
+          }
+          setHasGenerated(true)
+          localStorage.removeItem('fiche_draft')
+          setRestoredToast(true)
+          setTimeout(() => setRestoredToast(false), 4500)
+        }
+      }
+    } catch (err) {
+      console.error('Erreur restauration brouillon:', err)
+    }
+  }, [])
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,6 +117,29 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
     e.preventDefault()
     if (!title.trim() || !problem.trim() || !solution.trim()) {
       setError('Le titre, le problème et la solution sont obligatoires.')
+      return
+    }
+
+    if (!userId) {
+      // a. Sauvegarder l'état complet dans localStorage sous la clé fiche_draft
+      const draft = {
+        rawQuestion: rawQuestion.trim(),
+        rawAnswer: rawAnswer.trim(),
+        title: title.trim(),
+        problem: problem.trim(),
+        solution: solution.trim(),
+        tagsStr,
+        stackStr,
+        category,
+      }
+      try {
+        localStorage.setItem('fiche_draft', JSON.stringify(draft))
+      } catch (err) {
+        console.error('Erreur sauvegarde fiche_draft:', err)
+      }
+
+      // b. Ouvrir la modale d'invitation à se connecter
+      setShowAuthModal(true)
       return
     }
 
@@ -149,12 +202,19 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
           </p>
         </div>
         <Link
-          href="/dashboard"
+          href={userId ? '/dashboard' : '/'}
           className="text-sm font-medium text-muted hover:text-foreground transition-colors"
         >
-          ← Retour au dashboard
+          {userId ? '← Retour au dashboard' : '← Retour à l\'accueil'}
         </Link>
       </div>
+
+      {restoredToast && (
+        <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm rounded-md shadow-xs flex items-center gap-2.5 animate-in fade-in">
+          <Check className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span>✨ Brouillon restauré automatiquement ! Vous pouvez vérifier et publier votre fiche.</span>
+        </div>
+      )}
 
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md shadow-sm">
@@ -330,6 +390,46 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             </button>
           </div>
         </form>
+      )}
+
+      {/* Modale d'invitation à se connecter pour visiteur anonyme */}
+      {showAuthModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+        >
+          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-full bg-accent-light border border-accent/20 flex items-center justify-center text-accent mx-auto">
+              <Lock className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold tracking-tight text-foreground">
+                Connexion requise
+              </h3>
+              <p className="text-sm text-muted leading-relaxed">
+                Connecte-toi pour publier ta fiche et signer ton travail. Ton brouillon est sauvegardé.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Link
+                href="/login?redirect=/create&message=Connecte-toi+pour+publier+ta+fiche+et+signer+ton+travail.+Ton+brouillon+est+sauvegardé."
+                className="flex-1 bg-accent hover:opacity-90 text-white text-center py-2.5 px-4 rounded-md text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-1.5"
+              >
+                <span>Se connecter</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(false)}
+                className="border border-border bg-card hover:bg-background text-foreground text-center py-2.5 px-4 rounded-md text-sm font-medium transition-colors cursor-pointer"
+              >
+                Continuer l'édition
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
