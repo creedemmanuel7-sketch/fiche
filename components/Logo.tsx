@@ -37,7 +37,7 @@ export default function Logo({ className = '' }: LogoProps) {
           rx="1.5"
           fill="#108966"
           animate={{
-            scale: [1, 1.15, 1],
+            scale: [1, 1.1, 1],
             opacity: [0.85, 1, 0.85],
           }}
           transition={{

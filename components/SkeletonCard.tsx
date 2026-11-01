@@ -7,30 +7,30 @@ export function SkeletonCard() {
         {/* En-tête : catégorie + auteur */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="h-4.5 w-16 bg-muted/20 dark:bg-muted/30 rounded-full" />
-            <div className="h-3.5 w-28 bg-muted/20 dark:bg-muted/30 rounded" />
+            <div className="h-4.5 w-16 bg-gray-200 dark:bg-gray-800 rounded-full" />
+            <div className="h-3.5 w-28 bg-gray-200 dark:bg-gray-800 rounded" />
           </div>
-          <div className="h-4 w-4 bg-muted/20 dark:bg-muted/30 rounded" />
+          <div className="h-4 w-4 bg-gray-200 dark:bg-gray-800 rounded" />
         </div>
 
         {/* Titre (2 lignes) */}
         <div className="space-y-2 pt-1">
-          <div className="h-4.5 w-5/6 bg-muted/20 dark:bg-muted/30 rounded" />
-          <div className="h-4.5 w-3/5 bg-muted/20 dark:bg-muted/30 rounded" />
+          <div className="h-4.5 w-5/6 bg-gray-200 dark:bg-gray-800 rounded" />
+          <div className="h-4.5 w-3/5 bg-gray-200 dark:bg-gray-800 rounded" />
         </div>
 
         {/* Badges Tags */}
         <div className="flex flex-wrap gap-1.5 pt-2">
-          <div className="h-4.5 w-14 bg-muted/20 dark:bg-muted/30 rounded-full" />
-          <div className="h-4.5 w-16 bg-muted/20 dark:bg-muted/30 rounded-full" />
-          <div className="h-4.5 w-12 bg-muted/20 dark:bg-muted/30 rounded-full" />
+          <div className="h-4.5 w-14 bg-gray-200 dark:bg-gray-800 rounded-full" />
+          <div className="h-4.5 w-16 bg-gray-200 dark:bg-gray-800 rounded-full" />
+          <div className="h-4.5 w-12 bg-gray-200 dark:bg-gray-800 rounded-full" />
         </div>
       </div>
 
       {/* Footer : Utile et Vues */}
       <div className="flex items-center justify-between pt-3 border-t border-border">
-        <div className="h-3.5 w-14 bg-muted/20 dark:bg-muted/30 rounded" />
-        <div className="h-3.5 w-12 bg-muted/20 dark:bg-muted/30 rounded" />
+        <div className="h-3.5 w-14 bg-gray-200 dark:bg-gray-800 rounded" />
+        <div className="h-3.5 w-12 bg-gray-200 dark:bg-gray-800 rounded" />
       </div>
     </div>
   )

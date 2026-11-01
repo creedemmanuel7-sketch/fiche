@@ -360,7 +360,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
               ) : (
                 <>
                   <motion.span
-                    animate={justVoted ? { scale: [1, 1.45, 1] } : { scale: 1 }}
+                    animate={justVoted ? { scale: [1, 1.4, 1] } : { scale: 1 }}
                     transition={{ duration: 0.35, ease: 'easeInOut' }}
                     className="inline-flex items-center"
                   >
