@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Shield } from 'lucide-react'
 
 export const CATEGORIES = ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'] as const
 export type Category = (typeof CATEGORIES)[number]
@@ -192,6 +193,12 @@ export default function CreateFicheForm({ userId }: { userId: string }) {
             className="w-full bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent transition-all shadow-sm"
             required
           />
+        </div>
+
+        {/* Encart Confidentialité / PII Redaction */}
+        <div className="flex items-center gap-2 p-2.5 bg-muted/20 border border-border/80 rounded-md text-xs text-muted">
+          <Shield className="w-4 h-4 text-accent shrink-0" />
+          <span>🔒 Confidentialité garantie : L'IA anonymise automatiquement les numéros de téléphone et les noms avant la publication.</span>
         </div>
 
         <div className="pt-2">

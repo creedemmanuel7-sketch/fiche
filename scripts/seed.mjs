@@ -193,7 +193,13 @@ async function main() {
 
     console.log(`[${i + 1}/${RAW_ITEMS.length}] Transformation par Gemini : "${item.rawQuestion.slice(0, 45)}..."`)
 
-    const prompt = `Tu es un assistant qui transforme des échanges bruts (WhatsApp, Slack, forums) en fiches de connaissance capitalisées. 
+    const prompt = `Tu es un assistant de structuration de connaissances. 
+AVANT TOUTE CHOSE, tu dois anonymiser les données personnelles (PII) présentes dans le texte brut :
+- Remplace tous les numéros de téléphone (ex: +228 90 00 00 00, 90000000) par le texte exact : [NUMÉRO MASQUÉ].
+- Remplace tous les noms de personnes ou d'entreprises spécifiques par des termes génériques (ex: [NOM MASQUÉ], [ENTREPRISE LOCALE]).
+- Ne conserve aucune adresse email personnelle (remplace par [EMAIL MASQUÉ]).
+Ensuite, et seulement ensuite, structure la fiche selon le schéma JSON demandé.
+
 Tu dois être capable de traiter aussi bien du code (React, Node) que du savoir professionnel (carrière, gestion de projet, conseils, retours d'expérience).
 Pour chaque fiche, tu dois déterminer une 'Catégorie' parmi les suivantes :
 - 'Code' : Problèmes techniques, syntaxe, bugs, architecture.
