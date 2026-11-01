@@ -18,12 +18,28 @@ async function DashboardContent() {
     redirect('/login')
   }
 
-  // Récupérer le profil (rôle et display_name)
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, display_name')
-    .eq('id', user.id)
-    .maybeSingle()
+  // Récupérer le profil (rôle, display_name, linkedin_url)
+  let profile: { role?: string; display_name?: string | null; linkedin_url?: string | null } | null = null
+  try {
+    const { data: prof, error: pErr } = await supabase
+      .from('profiles')
+      .select('role, display_name, linkedin_url')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (!pErr && prof) {
+      profile = prof
+    } else {
+      const { data: fallbackProf } = await supabase
+        .from('profiles')
+        .select('role, display_name')
+        .eq('id', user.id)
+        .maybeSingle()
+      profile = fallbackProf
+    }
+  } catch {
+    // Ignorer
+  }
 
   const userRole = profile?.role || (user.email?.startsWith('test+') ? 'admin' : 'user')
 
@@ -102,6 +118,7 @@ async function DashboardContent() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
           <ProfileHeader
             initialDisplayName={profile?.display_name || null}
+            initialLinkedinUrl={profile?.linkedin_url || null}
             email={user.email || ''}
           />
           <div className="flex items-center gap-3">

@@ -6,6 +6,7 @@ import Header from '@/components/Header'
 import { getFingerprint } from '@/lib/fingerprint'
 import { getCategoryBadgeClass, resolveCategory } from '@/components/FicheCard'
 import { ThumbsUp, ThumbsDown, Eye, Check, Bookmark } from 'lucide-react'
+import { Linkedin } from '@/components/icons/Linkedin'
 
 interface FicheViewerProps {
   fiche: {
@@ -22,6 +23,7 @@ interface FicheViewerProps {
     created_at: string
     author_id: string
     author_name?: string
+    author_linkedin_url?: string | null
   }
   user?: { email?: string | null } | null
 }
@@ -221,7 +223,21 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
             ← Retour à l'accueil
           </Link>
           <div className="flex items-center gap-2 text-sm text-muted">
-            <span>Auteur : {fiche.author_name || 'Équipe Fiche'}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span>Auteur : {fiche.author_name || 'Équipe Fiche'}</span>
+              {fiche.author_linkedin_url && (
+                <a
+                  href={fiche.author_linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Voir le profil LinkedIn de l'auteur (Proof-of-Work)"
+                  className="inline-flex items-center gap-1 text-[#0A66C2] hover:opacity-85 transition-opacity bg-[#0A66C2]/10 border border-[#0A66C2]/25 px-1.5 py-0.5 rounded text-xs font-medium ml-0.5"
+                >
+                  <Linkedin className="w-3.5 h-3.5 fill-current" />
+                  <span className="hidden sm:inline">LinkedIn</span>
+                </a>
+              )}
+            </span>
             <span>•</span>
             <span>{dateFormatted}</span>
           </div>

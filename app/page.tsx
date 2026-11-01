@@ -79,29 +79,50 @@ async function HomeContent() {
   const rawList = (fetched as (PublicFiche & { is_hidden?: boolean })[]) || []
   const visibleFiches = rawList.filter((f) => !f.is_hidden)
 
-  // Récupérer les noms des auteurs depuis la table profiles
+  // Récupérer les noms des auteurs et profils LinkedIn depuis la table profiles
   const authorIds = Array.from(new Set(visibleFiches.map((f) => f.author_id).filter(Boolean)))
-  let profileMap: Record<string, string> = {}
+  let profileMap: Record<string, { name: string; linkedin_url?: string | null }> = {}
   if (authorIds.length > 0) {
     try {
-      const { data: profs } = await supabase
+      const { data: profs, error: pErr } = await supabase
         .from('profiles')
-        .select('id, display_name, email')
+        .select('id, display_name, email, linkedin_url')
         .in('id', authorIds)
-      if (profs) {
+      if (!pErr && profs) {
         profs.forEach((p) => {
-          profileMap[p.id] = p.display_name || (p.email ? p.email.split('@')[0] : 'Équipe Fiche')
+          profileMap[p.id] = {
+            name: p.display_name || (p.email ? p.email.split('@')[0] : 'Équipe Fiche'),
+            linkedin_url: (p as { linkedin_url?: string | null }).linkedin_url || null,
+          }
         })
+      } else {
+        const { data: fallbackProfs } = await supabase
+          .from('profiles')
+          .select('id, display_name, email')
+          .in('id', authorIds)
+        if (fallbackProfs) {
+          fallbackProfs.forEach((p) => {
+            profileMap[p.id] = {
+              name: p.display_name || (p.email ? p.email.split('@')[0] : 'Équipe Fiche'),
+            }
+          })
+        }
       }
     } catch {
       // Ignorer si échec
     }
   }
 
-  allFichesForRec = visibleFiches.map((f) => ({
-    ...f,
-    author_name: profileMap[f.author_id] || 'Équipe Fiche',
-  }))
+  allFichesForRec = visibleFiches.map((f) => {
+    const prof = profileMap[f.author_id]
+    const name = prof?.name || 'Équipe Fiche'
+    const linkedin = prof?.linkedin_url || (name === 'Équipe Fiche' ? 'https://www.linkedin.com/company/fiche' : null)
+    return {
+      ...f,
+      author_name: name,
+      author_linkedin_url: linkedin,
+    }
+  })
 
   fichesData = allFichesForRec.slice(0, 6)
 

@@ -13,6 +13,7 @@ export interface PublicFiche {
   stack: string[]
   author_id: string
   author_name?: string
+  author_linkedin_url?: string | null
   view_count: number
   useful_count: number
   created_at: string

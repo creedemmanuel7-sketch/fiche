@@ -106,20 +106,41 @@ async function FicheContent({ params }: PageProps) {
     fiche = fallbackFiche
   }
 
-  // Récupérer le nom de l'auteur
+  // Récupérer le nom de l'auteur et son profil LinkedIn (Proof-of-Work)
   let authorName = 'Équipe Fiche'
-  if (fiche.author_id) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('email, display_name')
-      .eq('id', fiche.author_id)
-      .maybeSingle()
+  let authorLinkedinUrl: string | null = null
 
-    if (profile?.display_name) {
-      authorName = profile.display_name
-    } else if (profile?.email) {
-      authorName = profile.email.split('@')[0]
+  if (fiche.author_id) {
+    try {
+      const { data: profile, error: pErr } = await supabase
+        .from('profiles')
+        .select('email, display_name, linkedin_url')
+        .eq('id', fiche.author_id)
+        .maybeSingle()
+
+      if (!pErr && profile) {
+        if (profile.display_name) authorName = profile.display_name
+        else if (profile.email) authorName = profile.email.split('@')[0]
+        if (profile.linkedin_url) authorLinkedinUrl = profile.linkedin_url
+      } else {
+        const { data: fallbackProfile } = await supabase
+          .from('profiles')
+          .select('email, display_name')
+          .eq('id', fiche.author_id)
+          .maybeSingle()
+
+        if (fallbackProfile?.display_name) authorName = fallbackProfile.display_name
+        else if (fallbackProfile?.email) authorName = fallbackProfile.email.split('@')[0]
+      }
+    } catch {
+      // Ignorer
     }
+  }
+
+  // Si aucun profil spécifique n'est encore configuré en base (migration en attente),
+  // afficher le Proof-of-Work pour l'Équipe Fiche
+  if (!authorLinkedinUrl && authorName === 'Équipe Fiche') {
+    authorLinkedinUrl = 'https://www.linkedin.com/company/fiche'
   }
 
   return (
@@ -127,6 +148,7 @@ async function FicheContent({ params }: PageProps) {
       fiche={{
         ...fiche,
         author_name: authorName,
+        author_linkedin_url: authorLinkedinUrl,
       }}
       user={user ? { email: user.email } : null}
     />
