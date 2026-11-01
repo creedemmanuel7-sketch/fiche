@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import FicheCard, { type PublicFiche } from '@/components/FicheCard'
 import {
@@ -12,6 +13,7 @@ import {
   Search,
   X,
   ChevronDown,
+  Dices,
 } from 'lucide-react'
 
 export type { PublicFiche }
@@ -37,6 +39,8 @@ export default function HomeSearch({
   title = 'Explorer les fiches',
   subtitle = 'Recherchez, filtrez par stack et accédez à tout le savoir capitalisé.',
 }: HomeSearchProps) {
+  const router = useRouter()
+  const [isRolling, setIsRolling] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStacks, setSelectedStacks] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<SortOption>('recent')
@@ -84,6 +88,27 @@ export default function HomeSearch({
     setTimeout(() => {
       setToastMessage(null)
     }, 2800)
+  }
+
+  const handleSurpriseMe = () => {
+    if (isRolling) return
+    setIsRolling(true)
+
+    // Sélection aléatoire d'une fiche parmi les fiches disponibles
+    const pool = initialFiches.length > 0 ? initialFiches : []
+    if (pool.length === 0) {
+      triggerToast('Aucune fiche disponible')
+      setIsRolling(false)
+      return
+    }
+
+    const randomIndex = Math.floor(Math.random() * pool.length)
+    const randomFiche = pool[randomIndex]
+
+    // Effet visuel de rotation 180° puis redirection
+    setTimeout(() => {
+      router.push(`/fiche/${randomFiche.id}`)
+    }, 320)
   }
 
   const handleToggleFavorite = async (e: React.MouseEvent, ficheId: string) => {
@@ -250,9 +275,9 @@ export default function HomeSearch({
           </section>
         )}
 
-        {/* Barre de recherche centrale */}
-        <div className="max-w-2xl mx-auto">
-          <div className="relative">
+        {/* Barre de recherche centrale + Bouton Surprends-moi */}
+        <div className="max-w-2xl mx-auto flex items-center gap-2.5">
+          <div className="relative flex-1">
             <Search className="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="search"
@@ -265,6 +290,20 @@ export default function HomeSearch({
               className="w-full bg-card border border-border p-3.5 pl-10 rounded-md text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent shadow-sm text-sm transition-all"
             />
           </div>
+
+          {/* Bouton "Surprends-moi" (Lucky Fiche) */}
+          <button
+            type="button"
+            onClick={handleSurpriseMe}
+            disabled={isRolling}
+            title="Ouvrir une fiche au hasard"
+            className={`inline-flex items-center gap-2 bg-transparent hover:bg-card border border-border p-3.5 sm:px-4 rounded-md text-sm text-muted hover:text-foreground font-medium transition-all shadow-xs shrink-0 cursor-pointer ${
+              isRolling ? 'rotate-180 transition-transform duration-300' : 'transition-transform duration-300'
+            }`}
+          >
+            <Dices className={`w-4 h-4 text-accent transition-transform duration-300 ${isRolling ? 'rotate-180' : ''}`} />
+            <span className="hidden sm:inline">Surprends-moi</span>
+          </button>
         </div>
 
         {/* ========================================================= */}
@@ -367,6 +406,20 @@ export default function HomeSearch({
                   </div>
                 )}
               </div>
+
+              {/* Bouton Surprends-moi (Lucky Fiche) dans la barre de filtres */}
+              <button
+                type="button"
+                onClick={handleSurpriseMe}
+                disabled={isRolling}
+                title="Ouvrir une fiche au hasard"
+                className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border border-border bg-transparent hover:bg-card text-muted hover:text-foreground transition-all shadow-xs shrink-0 cursor-pointer ${
+                  isRolling ? 'rotate-180 transition-transform duration-300' : 'transition-transform duration-300'
+                }`}
+              >
+                <Dices className={`w-3.5 h-3.5 text-accent transition-transform duration-300 ${isRolling ? 'rotate-180' : ''}`} />
+                <span className="hidden sm:inline">Surprends-moi</span>
+              </button>
 
               {/* Badges des stacks sélectionnées avec bouton "x" pour retirer */}
               {selectedStacks.map((stk) => (
