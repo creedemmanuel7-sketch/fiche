@@ -8,6 +8,7 @@ import { getFingerprint } from '@/lib/fingerprint'
 import { getCategoryBadgeClass, resolveCategory } from '@/components/FicheCard'
 import { ThumbsUp, ThumbsDown, Eye, Check, Bookmark } from 'lucide-react'
 import { Linkedin } from '@/components/icons/Linkedin'
+import { createClient } from '@/lib/supabase/client'
 
 interface FicheViewerProps {
   fiche: {
@@ -90,6 +91,41 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
 
   // Saved / Bookmark state
   const [isSaved, setIsSaved] = useState(false)
+
+  // Reconnaissance Ouverte : Impact réel de l'auteur
+  const [authorImpact, setAuthorImpact] = useState<string>('')
+  const supabase = createClient()
+
+  useEffect(() => {
+    if (!fiche.author_id) return
+
+    const fetchAuthorImpact = async () => {
+      try {
+        const { data } = await supabase
+          .from('fiches')
+          .select('useful_count')
+          .eq('author_id', fiche.author_id)
+
+        if (data && data.length > 0) {
+          const totalUseful = data.reduce((acc, f) => acc + (f.useful_count || 0), 0)
+          const count = data.length
+          if (totalUseful >= 10) {
+            setAuthorImpact(`Top Contributeur · ${totalUseful} votes utiles`)
+          } else if (totalUseful > 0) {
+            setAuthorImpact(`Auteur vérifié · ${totalUseful} vote${totalUseful > 1 ? 's' : ''} utile${totalUseful > 1 ? 's' : ''}`)
+          } else if (count >= 3) {
+            setAuthorImpact(`Contributeur actif · ${count} fiches publiées`)
+          } else {
+            setAuthorImpact(`Auteur · ${count} fiche${count > 1 ? 's' : ''}`)
+          }
+        }
+      } catch (err) {
+        console.error('Erreur chargement impact auteur:', err)
+      }
+    }
+
+    fetchAuthorImpact()
+  }, [fiche.author_id, supabase])
 
   const hasRecordedView = useRef(false)
 
@@ -274,24 +310,35 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           >
             ← Retour à l'accueil
           </Link>
-          <div className="flex items-center gap-2 text-sm text-text-secondary">
-            <span className="inline-flex items-center gap-1.5">
-              <span>Auteur : {fiche.author_name || 'Équipe Fiche'}</span>
-              {fiche.author_linkedin_url && (
-                <a
-                  href={fiche.author_linkedin_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Voir le profil LinkedIn de l'auteur (Proof-of-Work)"
-                  className="inline-flex items-center gap-1 text-[#0A66C2] hover:opacity-85 transition-opacity bg-[#0A66C2]/10 border border-[#0A66C2]/25 px-1.5 py-0.5 rounded text-xs font-medium ml-0.5"
-                >
-                  <Linkedin className="w-3.5 h-3.5 fill-current" />
-                  <span className="hidden sm:inline">LinkedIn</span>
-                </a>
-              )}
-            </span>
-            <span>•</span>
-            <span>{dateFormatted}</span>
+          <div className="flex flex-col items-end gap-1 text-right">
+            <div className="flex items-center gap-2 text-sm text-text-secondary">
+              <span className="inline-flex items-center gap-1.5">
+                <span>Auteur : {fiche.author_name || 'Équipe Fiche'}</span>
+                {fiche.author_linkedin_url && (
+                  <a
+                    href={fiche.author_linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Voir le profil LinkedIn de l'auteur (Proof-of-Work)"
+                    className="inline-flex items-center gap-1 text-[#0A66C2] hover:opacity-85 transition-opacity bg-[#0A66C2]/10 border border-[#0A66C2]/25 px-1.5 py-0.5 rounded text-xs font-medium ml-0.5"
+                  >
+                    <Linkedin className="w-3.5 h-3.5 fill-current" />
+                    <span className="hidden sm:inline">LinkedIn</span>
+                  </a>
+                )}
+              </span>
+              <span>•</span>
+              <span>{dateFormatted}</span>
+            </div>
+            {authorImpact && (
+              <div
+                id="author-recognition-badge"
+                className="text-[11px] font-medium text-accent inline-flex items-center gap-1.5 bg-accent-light border border-accent/25 px-2 py-0.5 rounded-full"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                <span>{authorImpact}</span>
+              </div>
+            )}
           </div>
         </div>
 

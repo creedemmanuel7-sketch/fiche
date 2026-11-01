@@ -1,7 +1,9 @@
+'use client'
+
 import Link from 'next/link'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
-import { Bookmark, Shield } from 'lucide-react'
+import { Bookmark, Shield, Search } from 'lucide-react'
 
 interface HeaderProps {
   user?: { email?: string | null; role?: string | null } | null
@@ -16,7 +18,21 @@ export default function Header({ user }: HeaderProps) {
         <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
           <Logo />
         </Link>
-        <nav className="flex items-center gap-4 sm:gap-6">
+        <nav className="flex items-center gap-3 sm:gap-5">
+          <button
+            type="button"
+            id="header-command-menu-btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-menu'))}
+            className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-surface-raised border border-border-hairline hover:bg-surface-overlay text-text-secondary hover:text-text-primary text-xs transition-colors cursor-pointer"
+            title="Rechercher ou exécuter une commande (Ctrl+K)"
+          >
+            <Search className="w-3.5 h-3.5 text-text-muted" />
+            <span className="text-text-muted">Rechercher...</span>
+            <kbd className="font-mono text-[10px] bg-surface-base border border-border-hairline px-1.5 py-0.5 rounded text-text-muted">
+              Ctrl+K
+            </kbd>
+          </button>
+
           <Link
             href="/explorer"
             className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"

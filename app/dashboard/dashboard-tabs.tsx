@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ThumbsUp, ThumbsDown, Eye, MessageSquare, BarChart3, FileText, X } from 'lucide-react'
-import BadgesGrid from '@/components/BadgesGrid'
+import ImpactStats from '@/components/ImpactStats'
 import type { FicheItem, FicheFeedbackData } from './fiches-list'
 
 interface DashboardTabsProps {
@@ -269,9 +269,9 @@ export default function DashboardTabs({
             </p>
           </div>
 
-          {/* Grille des Succès & Badges de contribution */}
-          <section className="bg-card border border-border rounded-lg p-6 shadow-sm">
-            <BadgesGrid
+          {/* Reconnaissance Ouverte & Métriques d'Impact Vérifiées */}
+          <section className="bg-surface-base border border-border-hairline rounded-lg p-6">
+            <ImpactStats
               stats={{
                 totalFiches,
                 totalUseful,
