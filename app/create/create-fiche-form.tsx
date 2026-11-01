@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { Shield, Lock, Check } from 'lucide-react'
+import { Shield, Lock, Check, ShieldCheck, ShieldAlert } from 'lucide-react'
+import { detectSensitiveData, type DetectionResult } from '@/lib/piiDetector'
 
 export const CATEGORIES = ['Code', 'Carrière', 'Méthodo', 'Contexte Local', 'Soft Skills'] as const
 export type Category = (typeof CATEGORIES)[number]
@@ -41,6 +42,21 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
   const [error, setError] = useState<string | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [restoredToast, setRestoredToast] = useState(false)
+
+  // Détection des données sensibles (PII & secrets) côté client (Local-First)
+  const [detectionResult, setDetectionResult] = useState<DetectionResult>(() =>
+    detectSensitiveData('')
+  )
+
+  // Debounce (300ms) pour analyser les champs bruts sans ralentir la saisie
+  useEffect(() => {
+    const combined = `${rawQuestion}\n${rawAnswer}`
+    const handler = setTimeout(() => {
+      setDetectionResult(detectSensitiveData(combined))
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [rawQuestion, rawAnswer])
 
   // Effet pour alterner le texte de chargement de l'IA
   useEffect(() => {
@@ -324,10 +340,54 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
           />
         </div>
 
-        {/* Encart Confidentialité / PII Redaction */}
-        <div className="flex items-center gap-2 p-2.5 bg-muted/20 border border-border/80 rounded-md text-xs text-muted">
-          <Shield className="w-4 h-4 text-accent shrink-0" />
-          <span>🔒 Confidentialité garantie : L'IA anonymise automatiquement les numéros de téléphone et les noms avant la publication.</span>
+        {/* Barre d'état de sécurité Local-First (Code Editor Status Bar) */}
+        <div
+          id="pii-status-bar"
+          className={`flex flex-col gap-2.5 p-3 rounded-md border text-xs transition-all ${
+            detectionResult.hasSensitiveData
+              ? 'bg-amber-500/10 border-amber-500/30 text-amber-500'
+              : 'bg-surface-raised border-border-hairline text-text-secondary'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {detectionResult.hasSensitiveData ? (
+                <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0" />
+              ) : (
+                <ShieldCheck className="w-4 h-4 text-accent shrink-0" />
+              )}
+              <span className={`font-medium ${detectionResult.hasSensitiveData ? 'text-amber-500' : 'text-text-secondary'}`}>
+                {detectionResult.hasSensitiveData
+                  ? `${detectionResult.totalCount} élément(s) sensible(s) détecté(s) (${detectionResult.typeLabels.join(', ')}). L'IA les masquera avant publication.`
+                  : 'Aucun secret détecté. Vos données sont saines.'}
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-text-muted hidden sm:inline uppercase tracking-wider">
+              Local-First
+            </span>
+          </div>
+
+          {/* Pilules interactives : Aperçu de l'anonymisation */}
+          {detectionResult.hasSensitiveData && (
+            <div className="pt-2 border-t border-amber-500/20 space-y-1.5" id="pii-preview-container">
+              <div className="text-[11px] text-text-muted font-medium flex items-center justify-between">
+                <span>Aperçu de l'anonymisation :</span>
+                <span className="font-mono text-[10px] text-amber-500/70">Protection IPDCP</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {detectionResult.items.map((item, idx) => (
+                  <span
+                    key={`${item.type}-${idx}`}
+                    title={`Élément détecté : ${item.rawMatch}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-mono text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400"
+                  >
+                    <span>{item.maskedPlaceholder}</span>
+                    <span className="text-[10px] text-amber-500/70 font-sans">({item.label})</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="pt-2">
