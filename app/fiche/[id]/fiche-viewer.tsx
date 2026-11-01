@@ -29,6 +29,48 @@ interface FicheViewerProps {
   user?: { email?: string | null } | null
 }
 
+function FormattedContent({ content }: { content: string }) {
+  if (!content) return null
+  const parts = content.split(/(```[\s\S]*?```)/g)
+
+  return (
+    <div className="space-y-2">
+      {parts.map((part, idx) => {
+        if (part.startsWith('```') && part.endsWith('```')) {
+          const firstLineBreak = part.indexOf('\n')
+          let language = ''
+          let code = ''
+          if (firstLineBreak !== -1) {
+            language = part.slice(3, firstLineBreak).trim()
+            code = part.slice(firstLineBreak + 1, -3)
+          } else {
+            code = part.slice(3, -3)
+          }
+
+          return (
+            <div key={idx} className="my-2.5">
+              {language && (
+                <div className="text-[10px] font-mono text-text-muted px-2 py-0.5 bg-surface-raised border-t border-x border-border-hairline rounded-t-md inline-block uppercase">
+                  {language}
+                </div>
+              )}
+              <pre className="overflow-x-auto max-w-full bg-surface-raised border border-border-hairline rounded-md p-3.5 sm:p-4 font-mono text-xs text-text-primary leading-relaxed">
+                <code className="font-mono whitespace-pre">{code.replace(/^\n+|\n+$/g, '')}</code>
+              </pre>
+            </div>
+          )
+        }
+
+        return (
+          <p key={idx} className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base text-text-primary">
+            {part}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function FicheViewer({ fiche, user }: FicheViewerProps) {
   const [usefulCount, setUsefulCount] = useState(fiche.useful_count || 0)
   const [hasVoted, setHasVoted] = useState(false)
@@ -223,7 +265,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
         )}
       </AnimatePresence>
 
-      <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-10 space-y-8">
+      <main className="flex-1 max-w-3xl w-full mx-auto p-6 sm:p-10 space-y-8 pb-28 md:pb-10">
         {/* Navigation retour */}
         <div className="flex items-center justify-between pb-4 border-b border-border-hairline">
           <Link
@@ -295,9 +337,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           <h2 className="text-xs font-bold uppercase tracking-wider text-text-muted">
             Problème
           </h2>
-          <p className="text-sm sm:text-base text-text-primary leading-relaxed whitespace-pre-wrap">
-            {fiche.problem}
-          </p>
+          <FormattedContent content={fiche.problem || ''} />
         </section>
 
         {/* Bloc Solution (Surface 1 Base, sans ombre) */}
@@ -305,9 +345,7 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           <h2 className="text-xs font-bold uppercase tracking-wider text-text-muted">
             Solution
           </h2>
-          <div className="text-sm sm:text-base text-text-primary leading-relaxed whitespace-pre-wrap">
-            {fiche.solution}
-          </div>
+          <FormattedContent content={fiche.solution || ''} />
         </section>
 
         {/* Bloc dépliable Question d'origine */}
@@ -519,6 +557,58 @@ export default function FicheViewer({ fiche, user }: FicheViewerProps) {
           )}
         </section>
       </main>
+
+      {/* Barre d'action fixe en bas sur mobile (Apple HIG min-h 44px, gap >= 8px) */}
+      <div
+        id="mobile-fiche-action-bar"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 p-3 backdrop-blur-2xl bg-surface-canvas/80 border-t border-border-hairline pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+      >
+        <div className="flex items-center gap-2.5 max-w-lg mx-auto">
+          {/* Bouton Utile Mobile */}
+          <button
+            type="button"
+            id="mobile-useful-vote-button"
+            onClick={handleVote}
+            disabled={hasVoted || voting}
+            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 rounded-md text-sm font-semibold transition-all active:scale-[0.98] ${
+              hasVoted
+                ? 'bg-surface-raised text-text-muted border border-border-hairline cursor-not-allowed'
+                : 'bg-text-primary text-surface-canvas hover:opacity-90'
+            }`}
+          >
+            {hasVoted ? (
+              <>
+                <Check className="w-4 h-4 text-text-muted shrink-0" />
+                <span>Voté ({usefulCount})</span>
+              </>
+            ) : (
+              <>
+                <ThumbsUp className={`w-4 h-4 shrink-0 ${justVoted ? 'text-accent fill-accent' : ''}`} />
+                <span>Utile ({usefulCount})</span>
+              </>
+            )}
+          </button>
+
+          {/* Bouton Partager Mobile */}
+          <button
+            type="button"
+            id="mobile-share-link-button"
+            onClick={handleCopyLink}
+            title="Copier le lien de la fiche"
+            className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 rounded-md text-sm font-medium bg-surface-raised border border-border-hairline hover:bg-surface-overlay text-text-primary transition-all active:scale-[0.98]"
+          >
+            <svg className="w-4 h-4 text-text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
+            </svg>
+            <span>Partager</span>
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

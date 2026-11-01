@@ -229,7 +229,7 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-24 md:pb-8">
       {/* En-tête de section */}
       <div className="flex items-center justify-between pb-4 border-b border-border">
         <div>
@@ -390,11 +390,12 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
           )}
         </div>
 
-        <div className="pt-2">
+        {/* Bouton Desktop */}
+        <div className="pt-2 hidden md:block">
           <button
             type="submit"
             disabled={loading}
-            className="bg-accent text-white px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-75 transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer"
+            className="bg-accent text-white px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-75 transition-all inline-flex items-center gap-2 cursor-pointer"
           >
             {loading && (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -402,6 +403,25 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
             <span>{loading ? LOADING_STEPS[loadingStepIndex] : 'Générer la fiche'}</span>
           </button>
         </div>
+
+        {/* Barre d'action fixe en bas sur mobile (Bottom Action Bar) */}
+        {!hasGenerated && (
+          <div
+            id="mobile-generate-action-bar"
+            className="md:hidden fixed bottom-0 left-0 right-0 z-40 p-3 backdrop-blur-2xl bg-surface-canvas/80 border-t border-border-hairline pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          >
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full min-h-[44px] bg-accent text-white py-3 px-5 rounded-md text-sm font-semibold hover:opacity-90 disabled:opacity-75 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {loading && (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              )}
+              <span>{loading ? LOADING_STEPS[loadingStepIndex] : 'Générer la fiche'}</span>
+            </button>
+          </div>
+        )}
       </form>
 
       {/* Formulaire d'édition pré-rempli par Gemini */}
@@ -506,11 +526,12 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
             />
           </div>
 
-          <div className="pt-2">
+          {/* Bouton Desktop */}
+          <div className="pt-2 hidden md:block">
             <button
               type="submit"
               disabled={publishing || publishSuccess}
-              className="bg-foreground text-background px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-75 transition-all shadow-sm inline-flex items-center gap-2 cursor-pointer"
+              className="bg-text-primary text-surface-canvas px-5 py-2.5 rounded-md text-sm font-medium hover:opacity-90 disabled:opacity-75 transition-all inline-flex items-center gap-2 cursor-pointer"
             >
               {publishSuccess ? (
                 <motion.span
@@ -524,7 +545,38 @@ export default function CreateFicheForm({ userId }: { userId: string | null }) {
                 </motion.span>
               ) : publishing ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-surface-canvas/30 border-t-surface-canvas rounded-full animate-spin" />
+                  <span>Publication en cours...</span>
+                </>
+              ) : (
+                <span>Publier la fiche</span>
+              )}
+            </button>
+          </div>
+
+          {/* Barre d'action fixe en bas sur mobile pour Publier */}
+          <div
+            id="mobile-publish-action-bar"
+            className="md:hidden fixed bottom-0 left-0 right-0 z-40 p-3 backdrop-blur-2xl bg-surface-canvas/80 border-t border-border-hairline pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          >
+            <button
+              type="submit"
+              disabled={publishing || publishSuccess}
+              className="w-full min-h-[44px] bg-text-primary text-surface-canvas py-3 px-5 rounded-md text-sm font-semibold hover:opacity-90 disabled:opacity-75 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {publishSuccess ? (
+                <motion.span
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: [0.6, 1.15, 1], opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="inline-flex items-center gap-2 text-accent font-semibold"
+                >
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>Publiée avec succès !</span>
+                </motion.span>
+              ) : publishing ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-surface-canvas/30 border-t-surface-canvas rounded-full animate-spin" />
                   <span>Publication en cours...</span>
                 </>
               ) : (
